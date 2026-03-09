@@ -41,6 +41,7 @@ _HELP_TEXT = """\
 
 [bold $accent]App[/]
   [bold]?[/]           Show this help
+  [bold]a[/]           About probefs
   [bold]ctrl+q[/]      Quit
   [bold]ctrl+c[/]      Quit (alternate)
 """
@@ -195,6 +196,64 @@ class InputDialog(ModalScreen[str | None]):
 
     def on_key(self, event) -> None:
         if event.key == "escape":
+            self.dismiss(None)
+
+
+_ABOUT_ART = """\
+[bold $primary]  ┌─┐┬─┐┌─┐┌┐ ┌─┐┌─┐┌─┐[/]
+[bold $primary]  ├─┘├┬┘│ │├┴┐├─ ├─ └─┐[/]
+[bold $primary]  ┴  ┴└─└─┘└─┘└─┘┴  └─┘[/]
+
+[dim]  a keyboard-driven TUI file browser[/]
+
+[bold]   .---------------------------.[/]
+[bold]   |[/] [dim]/home/you[/][bold]                |[/]
+[bold]   |[/]   [bold $accent]> probefs/[/]  [dim]← hi :)[/][bold]   |[/]
+[bold]   |[/]     [dim]Documents/[/][bold]           |[/]
+[bold]   |[/]     [dim]Downloads/[/][bold]           |[/]
+[bold]   |[/]     [dim]Music/[/][bold]               |[/]
+[bold]   |___________________________|[/]
+[bold]   | [/][dim]j[/][bold] [/][dim]k[/][bold] [/][dim]l[/][bold] [/][dim]h[/][bold] [/][dim].[/][bold] [/][dim]s[/][bold] [/][dim]/[/][bold] [/][dim]?[/][bold] [/][dim]![/][bold] [/][dim]q[/][bold]        |[/]
+[bold]   '---------------------------'[/]
+
+  [dim]Built with[/] [bold]Python[/] [dim]&[/] [bold]Textual[/]
+  [dim]MIT License[/]
+"""
+
+
+class AboutDialog(ModalScreen[None]):
+    """Silly ASCII about screen."""
+
+    DEFAULT_CSS = """
+    AboutDialog {
+        align: center middle;
+    }
+    AboutDialog > Vertical {
+        background: $surface;
+        padding: 1 2;
+        width: 38;
+        height: auto;
+        border: tall $primary;
+    }
+    AboutDialog Static {
+        width: 100%;
+    }
+    AboutDialog Button {
+        width: 100%;
+        margin-top: 1;
+    }
+    """
+
+    def compose(self) -> ComposeResult:
+        with Vertical():
+            yield Static(_ABOUT_ART, markup=True)
+            yield Button("Close", variant="primary", id="close")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        self.dismiss(None)
+
+    def on_key(self, event) -> None:
+        if event.key in ("escape", "enter", "a"):
             self.dismiss(None)
 
 

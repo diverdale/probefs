@@ -18,7 +18,7 @@ from textual.widgets import Footer
 
 from probefs.core.file_manager import FileManagerCore, SORT_LABELS
 from probefs.fs.probe_fs import ProbeFS
-from probefs.widgets.dialogs import ConfirmDialog, HelpDialog, InputDialog
+from probefs.widgets.dialogs import AboutDialog, ConfirmDialog, HelpDialog, InputDialog
 from probefs.widgets.directory_list import DirectoryList
 from probefs.widgets.filter_bar import FilterBar
 from probefs.widgets.preview_pane import PreviewPane
@@ -285,6 +285,10 @@ class MainScreen(Screen):
     def action_help(self) -> None:
         """Show keybinding reference. ? binding."""
         self.app.push_screen(HelpDialog())
+
+    def action_about(self) -> None:
+        """Show about screen. a binding."""
+        self.app.push_screen(AboutDialog())
 
     # -- File operation actions --
     # Pattern: action method collects input via modal, then fires a named @work worker.
