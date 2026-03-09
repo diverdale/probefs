@@ -29,6 +29,10 @@ class DirectoryList(Widget, can_focus=True):
             self.entry = entry
             super().__init__()
 
+        @property
+        def control(self) -> "DirectoryList":
+            return self._sender  # type: ignore[return-value]
+
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._entries: list[dict] = []
