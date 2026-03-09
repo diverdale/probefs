@@ -10,27 +10,27 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 ## Current Position
 
 Phase: 1 of 7 (Core Scaffold and Async Architecture)
-Plan: 2 of TBD in current phase
+Plan: 3 of TBD in current phase
 Status: In progress
-Last activity: 2026-03-09 — Completed 01-02 (FileManagerCore navigation state machine)
+Last activity: 2026-03-09 — Completed 01-03 (Three-pane TUI with async navigation)
 
-Progress: [██░░░░░░░░] 10%
+Progress: [███░░░░░░░] 15%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
-- Average duration: 2.5 min
-- Total execution time: 0.08 hours
+- Total plans completed: 3
+- Average duration: 6.7 min
+- Total execution time: 0.33 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-core-scaffold-and-async-architecture | 2 | 5 min | 2.5 min |
+| 01-core-scaffold-and-async-architecture | 3 | 20 min | 6.7 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (3 min), 01-02 (2 min)
+- Last 5 plans: 01-01 (3 min), 01-02 (2 min), 01-03 (15 min)
 - Trend: -
 
 *Updated after each plan completion*
@@ -54,10 +54,13 @@ Recent decisions affecting current work:
 - [01-02]: PurePosixPath used for path arithmetic — filesystem-agnostic, never calls stat/lstat, keeping descend/ascend pure
 - [01-02]: ascend() at root is silent no-op for cwd (parent == cwd == '/') but still resets cursor_index to 0
 - [01-02]: ProbeFS stored on core.fs at construction — workers call core.fs.ls() after navigation events, not inside transitions
+- [01-03]: exclusive=True on _load_panes worker cancels in-flight loads automatically — no manual cancellation needed
+- [01-03]: PreviewPane.CursorChanged posted via post_message() (not bubbling) — event.control is None, requires null guard in screen handler
+- [01-03]: Single _load_panes() worker loads both parent and current directories to minimize thread overhead
 
 ### Pending Todos
 
-- Create src/probefs/app.py with main() stub so entry point resolves (Plan 02 or similar)
+None.
 
 ### Blockers/Concerns
 
@@ -66,5 +69,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: Completed 01-02-PLAN.md (FileManagerCore navigation state machine)
+Stopped at: Completed 01-03-PLAN.md (Three-pane TUI with async navigation)
 Resume file: None
