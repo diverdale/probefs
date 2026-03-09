@@ -45,19 +45,19 @@ class ProbeFSApp(App):
                 priority=True, show=True, id="probefs.quit"),
         Binding("ctrl+c", "quit", "Quit",
                 priority=True, show=False, id="probefs.quit_ctrl_c"),  # duplicate of q
-        # File operations — keep show=False (too many to show in footer)
+        # File operations
         Binding("y", "screen.copy", "Copy",
-                priority=True, show=False, id="probefs.copy"),
+                priority=True, show=True, id="probefs.copy"),
         Binding("p", "screen.move", "Move",
-                priority=True, show=False, id="probefs.move"),
-        Binding("d", "screen.delete", "Delete to trash",
-                priority=True, show=False, id="probefs.delete"),
+                priority=True, show=True, id="probefs.move"),
+        Binding("d", "screen.delete", "Trash",
+                priority=True, show=True, id="probefs.delete"),
         Binding("r", "screen.rename", "Rename",
-                priority=True, show=False, id="probefs.rename"),
+                priority=True, show=True, id="probefs.rename"),
         Binding("n", "screen.new_file", "New file",
-                priority=True, show=False, id="probefs.new_file"),
+                priority=True, show=True, id="probefs.new_file"),
         Binding("ctrl+n", "screen.new_dir", "New dir",
-                priority=True, show=False, id="probefs.new_dir"),
+                priority=True, show=True, id="probefs.new_dir"),
     ]
 
     def __init__(self) -> None:
