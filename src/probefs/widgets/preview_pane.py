@@ -57,11 +57,10 @@ class PreviewPane(Widget):
 
         worker = get_current_worker()
 
-        # Access the app's MainScreen to get the ProbeFS instance.
-        # Use call_from_thread for any UI queries; read-only access to core.fs is safe.
-        # We retrieve the screen object reference — it is stable across workers.
-        screen = self.app.get_screen("main")
-        fs = screen.core.fs
+        # self.screen is the MainScreen this widget is mounted inside.
+        # Reading .core.fs is safe from a thread — it's set in on_mount before
+        # any worker can run, and is never reassigned after that.
+        fs = self.screen.core.fs  # type: ignore[attr-defined]
 
         truncated = False
         try:
@@ -138,8 +137,7 @@ class PreviewPane(Widget):
     def _load_dir_preview(self, path: str) -> None:
         """Worker: list directory contents, post to preview-dir DirectoryList."""
         worker = get_current_worker()
-        screen = self.app.get_screen("main")
-        fs = screen.core.fs
+        fs = self.screen.core.fs  # type: ignore[attr-defined]
         try:
             entries = fs.ls(path, detail=True)
         except (OSError, PermissionError) as exc:

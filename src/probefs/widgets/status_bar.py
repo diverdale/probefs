@@ -15,7 +15,6 @@ to fill available space. Count and space are right-aligned fixed widths.
 from __future__ import annotations
 
 from textual.app import ComposeResult
-from textual.containers import Horizontal
 from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import Label
@@ -52,10 +51,9 @@ class StatusBar(Widget):
     free_space: reactive[str] = reactive("")
 
     def compose(self) -> ComposeResult:
-        with Horizontal():
-            yield Label("", id="sb-path")
-            yield Label("", id="sb-count")
-            yield Label("", id="sb-space")
+        yield Label("", id="sb-path")
+        yield Label("", id="sb-count")
+        yield Label("", id="sb-space")
 
     def watch_path(self, value: str) -> None:
         self.query_one("#sb-path", Label).update(value)
