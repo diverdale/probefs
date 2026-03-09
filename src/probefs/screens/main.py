@@ -122,6 +122,22 @@ class MainScreen(Screen):
         preview = self.query_one("#pane-preview", PreviewPane)
         preview.post_message(PreviewPane.CursorChanged(entry))
 
+    # -- Action guard: block all screen actions while FilterBar is active --
+
+    def check_action(self, action: str, parameters: tuple) -> bool | None:
+        """Disable all screen actions while FilterBar is visible.
+
+        Returning False marks the binding as inactive so the key event is NOT
+        consumed — it continues down the handler chain and reaches FilterBar.on_key.
+        """
+        try:
+            fb = self.query_one("#filter-bar", FilterBar)
+        except Exception:
+            return True
+        if fb.display:
+            return False  # key passes through to FilterBar
+        return True
+
     # -- Action methods called by ProbeFSApp bindings (namespaced "screen.*") --
 
     def action_cursor_down(self) -> None:
