@@ -9,10 +9,10 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 
 ## Current Position
 
-Phase: 2 of 7 (Directory Rendering and Icon System) — COMPLETE
-Plan: 4 of 4 in current phase
-Status: Phase 2 complete
-Last activity: 2026-03-09 — Completed 02-04 (show_hidden toggle wired end-to-end; Phase 2 human-verified)
+Phase: 3 of 7 (Theme System) — IN PROGRESS
+Plan: 1 of 3 in current phase
+Status: Phase 3 plan 1 complete
+Last activity: 2026-03-09 — Completed 03-01 (ThemeLoader validate-then-construct gateway; 45 tests passing)
 
 Progress: [████████░░] 57%
 
@@ -36,6 +36,7 @@ Progress: [████████░░] 57%
 
 *Updated after each plan completion*
 | Phase 02 P04 | 2 | 2 tasks | 3 files |
+| Phase 03-theme-system P01 | 2 | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -70,6 +71,10 @@ Recent decisions affecting current work:
 - [02-04]: show_hidden state stored on FileManagerCore (not DirectoryList) — widget is stateless re: filter; core owns all nav state
 - [02-04]: action_toggle_hidden re-calls _load_panes() rather than filtering in-place — simpler; exclusive=True cancels stale loads
 - [02-04]: Binding priority=True on '.' is required — without it Textual may consume '.' for focus traversal before screen action fires
+- [03-01]: ThemeLoader is the ONLY place in the codebase that constructs Theme(...) — enforced by design, not convention
+- [03-01]: ThemeValidationError collects ALL errors before raising (not fail-fast) — user fixes all problems at once
+- [03-01]: YAML() instance created per-call in load() and load_from_string() — ruamel.yaml is not thread-safe at module level
+- [03-01]: Metadata fields (author, description, version) silently accepted in YAML but not stored in Theme — forward-compatible with future display
 
 ### Pending Todos
 
@@ -82,5 +87,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: Completed 02-04-PLAN.md (show_hidden toggle end-to-end wired; Phase 2 complete, human-verified)
+Stopped at: Completed 03-01-PLAN.md (ThemeLoader validate-then-construct gateway; Phase 3 plan 1 complete)
 Resume file: None
