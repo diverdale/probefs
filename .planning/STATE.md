@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 ## Current Position
 
 Phase: 2 of 7 (Directory Rendering and Icon System)
-Plan: 2 of 4 in current phase
+Plan: 3 of 4 in current phase
 Status: In progress
-Last activity: 2026-03-09 — Completed 02-02 (IconSet strategy pattern and ProbeFS.exists())
+Last activity: 2026-03-09 — Completed 02-03 (DataTable DirectoryList with Rich Text row builder)
 
 Progress: [████░░░░░░] 20%
 
@@ -35,6 +35,7 @@ Progress: [████░░░░░░] 20%
 - Trend: -
 
 *Updated after each plan completion*
+| Phase 02 P03 | 2 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -63,6 +64,9 @@ Recent decisions affecting current work:
 - [02-02]: ASCIIIconSet is the unconditional default — load_icon_set({}) returns ASCIIIconSet with no config required
 - [02-02]: NerdIconSet requires explicit 'icons: nerd' opt-in — auto-detection is impossible over SSH
 - [02-02]: ProbeFS.exists() added to FAL — widgets must never call os.path.exists directly for symlink detection
+- [Phase 02]: dt.clear(columns=False) must be explicit in set_entries — bare dt.clear() removes column definitions
+- [Phase 02]: show_hidden filtering in set_entries() on main thread enables instant dotfile toggle without re-reading disk
+- [Phase 02]: action_cursor_down/up (not action_scroll_down/up) required for cursor_row movement in DataTable
 
 ### Pending Todos
 
@@ -75,5 +79,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: Completed 02-02-PLAN.md (IconSet strategy pattern and ProbeFS.exists())
+Stopped at: Completed 02-03-PLAN.md (DataTable DirectoryList with Rich Text row builder)
 Resume file: None
