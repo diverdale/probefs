@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-09)
 
 **Core value:** A fast, beautiful, keyboard-driven file browser that feels at home in any terminal — local or remote — with a theming ecosystem that makes it yours.
-**Current focus:** Phase 4 (Phase 3 complete)
+**Current focus:** Phase 5 (Phase 4 complete)
 
 ## Current Position
 
-Phase: 4 of 7 — COMPLETE
-Plan: 2 of 2 in current phase
-Status: Phase 4 complete — keybinding override system runtime-verified (replace semantics, additive mapping, zero-config defaults confirmed)
-Last activity: 2026-03-09 — Completed 04-02 (human-verified keybinding overrides end-to-end)
+Phase: 5 of 7 — IN PROGRESS
+Plan: 1 of 4 in current phase (05-01 complete)
+Status: Phase 5 started — ProbeFS FAL extended with 6 file operation methods; send2trash 2.1.0 installed
+Last activity: 2026-03-09 — Completed 05-01 (ProbeFS copy/move/rename/trash/new_file/new_dir methods)
 
-Progress: [██████████] 78%
+Progress: [██████████] 80%
 
 ## Performance Metrics
 
@@ -41,6 +41,7 @@ Progress: [██████████] 78%
 | Phase 03-theme-system P03 | 13 | 2 tasks | 2 files |
 | Phase 04-keybinding-system-and-config-infrastructure P01 | 6 | 2 tasks | 2 files |
 | Phase 04-keybinding-system-and-config-infrastructure P02 | 4 | 1 task | 0 files |
+| Phase 05-file-operations-and-safety P01 | 2 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -91,6 +92,10 @@ Recent decisions affecting current work:
 - [Phase 04-keybinding-system-and-config-infrastructure]: Space-stripping guard str(v).replace(' ', '') in _setup_keybindings() prevents Textual Pitfall 3 (spaces in keymap values)
 - [04-02]: Override replace semantics verified at runtime — users must list original key explicitly to keep it (e.g. "n,j" not just "n")
 - [04-02]: Zero-config confirmed — app starts cleanly with no keybindings section and removing it fully restores all defaults
+- [05-01]: shutil.copytree used for directory copy in ProbeFS.copy() — fsspec LocalFileSystem.cp_file only calls makedirs for dirs, does not copy contents
+- [05-01]: ProbeFS.move() raises FileExistsError when dst is an existing directory — prevents silent mv-into-directory behavior
+- [05-01]: send2trash imported at module top as _send2trash — fast failure at startup, not mid-operation
+- [05-01]: new_dir() relies on fsspec LocalFileSystem.mkdir native FileExistsError — no redundant existence check needed
 
 ### Pending Todos
 
@@ -103,5 +108,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: Completed 04-02-PLAN.md (keybinding override system human-verified — Phase 4 complete)
+Stopped at: Completed 05-01-PLAN.md (ProbeFS FAL extended with 6 file operation methods + send2trash 2.1.0)
 Resume file: None
