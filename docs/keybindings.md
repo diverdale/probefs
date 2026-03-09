@@ -18,6 +18,25 @@ These IDs do not change between releases — you can safely use them in config f
 | `probefs.toggle_hidden` | `.` | Toggle hidden file visibility |
 | `probefs.quit` | `q` | Quit probefs |
 | `probefs.quit_ctrl_c` | `ctrl+c` | Quit probefs |
+| `probefs.copy` | `y` | Copy highlighted entry to destination |
+| `probefs.move` | `p` | Move highlighted entry to destination |
+| `probefs.delete` | `d` | Send highlighted entry to OS Trash |
+| `probefs.rename` | `r` | Rename highlighted entry |
+| `probefs.new_file` | `n` | Create new empty file in current directory |
+| `probefs.new_dir` | `ctrl+n` | Create new directory in current directory |
+
+## File Operations
+
+All file operations open a dialog before executing:
+
+- **Copy** (`y`): Enter destination path (pre-filled with current directory + filename)
+- **Move** (`p`): Enter destination path (pre-filled with current directory + filename)
+- **Delete** (`d`): Confirm dialog — entry goes to OS Trash, not permanent deletion
+- **Rename** (`r`): Input dialog pre-filled with current name; edit and press Enter
+- **New file** (`n`): Enter filename; created in the current directory
+- **New dir** (`ctrl+n`): Enter directory name; created in the current directory
+
+All file operations refresh the directory listing on completion.
 
 ## Overriding Keybindings
 

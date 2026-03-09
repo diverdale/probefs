@@ -42,6 +42,18 @@ class ProbeFSApp(App):
                 priority=True, show=False, id="probefs.quit"),
         Binding("ctrl+c", "quit", "Quit",
                 priority=True, show=False, id="probefs.quit_ctrl_c"),
+        Binding("y", "screen.copy", "Copy",
+                priority=True, show=False, id="probefs.copy"),
+        Binding("p", "screen.move", "Move",
+                priority=True, show=False, id="probefs.move"),
+        Binding("d", "screen.delete", "Delete to trash",
+                priority=True, show=False, id="probefs.delete"),
+        Binding("r", "screen.rename", "Rename",
+                priority=True, show=False, id="probefs.rename"),
+        Binding("n", "screen.new_file", "New file",
+                priority=True, show=False, id="probefs.new_file"),
+        Binding("ctrl+n", "screen.new_dir", "New dir",
+                priority=True, show=False, id="probefs.new_dir"),
     ]
 
     def __init__(self) -> None:
