@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 Phase: 2 of 7 (Directory Rendering and Icon System)
 Plan: 2 of 4 in current phase
 Status: In progress
-Last activity: 2026-03-09 — Completed 02-01 (File type categorization and metadata formatting)
+Last activity: 2026-03-09 — Completed 02-02 (IconSet strategy pattern and ProbeFS.exists())
 
 Progress: [████░░░░░░] 20%
 
@@ -60,6 +60,9 @@ Recent decisions affecting current work:
 - [01-03]: Single _load_panes() worker loads both parent and current directories to minimize thread overhead
 - [Phase 02]: get_category fs=None FAL boundary: widgets pass ProbeFS; callers/tests use os.path.exists fallback
 - [Phase 02]: Empty destination on islink=True treated as valid symlink — aligns with Pitfall 1 (never misidentify non-symlinks)
+- [02-02]: ASCIIIconSet is the unconditional default — load_icon_set({}) returns ASCIIIconSet with no config required
+- [02-02]: NerdIconSet requires explicit 'icons: nerd' opt-in — auto-detection is impossible over SSH
+- [02-02]: ProbeFS.exists() added to FAL — widgets must never call os.path.exists directly for symlink detection
 
 ### Pending Todos
 
@@ -72,5 +75,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: Completed 02-01-PLAN.md (File type categorization and metadata formatting)
+Stopped at: Completed 02-02-PLAN.md (IconSet strategy pattern and ProbeFS.exists())
 Resume file: None
