@@ -7,7 +7,7 @@ See: Textual 8.0.2 screen.py lines 1892-1925.
 from __future__ import annotations
 
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical
+from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.screen import ModalScreen
 from textual.widgets import Button, Input, Label, Static
 
@@ -199,7 +199,7 @@ class InputDialog(ModalScreen[str | None]):
 
 
 class HelpDialog(ModalScreen[None]):
-    """Full keybinding reference. Dismissed by Escape, Enter, or any key."""
+    """Full keybinding reference. Scrollable, dismissed by Escape or Close."""
 
     DEFAULT_CSS = """
     HelpDialog {
@@ -208,9 +208,8 @@ class HelpDialog(ModalScreen[None]):
     HelpDialog > Vertical {
         background: $surface;
         padding: 1 2;
-        width: 60;
-        height: auto;
-        max-height: 90%;
+        width: 62;
+        height: 80%;
         border: tall $primary;
     }
     HelpDialog #help-title {
@@ -218,6 +217,11 @@ class HelpDialog(ModalScreen[None]):
         width: 100%;
         color: $text;
         margin-bottom: 1;
+    }
+    HelpDialog VerticalScroll {
+        width: 100%;
+        height: 1fr;
+        border: none;
     }
     HelpDialog Static {
         width: 100%;
@@ -231,7 +235,8 @@ class HelpDialog(ModalScreen[None]):
     def compose(self) -> ComposeResult:
         with Vertical():
             yield Label("probefs — keyboard reference", id="help-title")
-            yield Static(_HELP_TEXT, markup=True)
+            with VerticalScroll():
+                yield Static(_HELP_TEXT, markup=True)
             yield Button("Close", variant="primary", id="close")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:

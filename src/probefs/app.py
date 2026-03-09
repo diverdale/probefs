@@ -62,7 +62,7 @@ class ProbeFSApp(App):
                 priority=True, show=False, id="probefs.copy_path"),
         Binding("o", "screen.open_default", "Open",
                 priority=True, show=False, id="probefs.open_default"),
-        Binding("!", "screen.shell", "Shell",
+        Binding("exclamation_mark", "screen.shell", "Shell",
                 priority=True, show=False, id="probefs.shell"),
         # File operations — hidden from footer
         Binding("y", "screen.copy", "Copy",
