@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 ## Current Position
 
 Phase: 5 of 7 — IN PROGRESS
-Plan: 1 of 4 in current phase (05-01 complete)
-Status: Phase 5 started — ProbeFS FAL extended with 6 file operation methods; send2trash 2.1.0 installed
-Last activity: 2026-03-09 — Completed 05-01 (ProbeFS copy/move/rename/trash/new_file/new_dir methods)
+Plan: 2 of 4 in current phase (05-02 complete)
+Status: Phase 5 in progress — ConfirmDialog and InputDialog modal widgets created; ready for MainScreen action wiring
+Last activity: 2026-03-09 — Completed 05-02 (ConfirmDialog and InputDialog ModalScreen widgets)
 
 Progress: [██████████] 80%
 
@@ -42,6 +42,7 @@ Progress: [██████████] 80%
 | Phase 04-keybinding-system-and-config-infrastructure P01 | 6 | 2 tasks | 2 files |
 | Phase 04-keybinding-system-and-config-infrastructure P02 | 4 | 1 task | 0 files |
 | Phase 05-file-operations-and-safety P01 | 2 | 2 tasks | 3 files |
+| Phase 05-file-operations-and-safety P02 | 1 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -96,6 +97,9 @@ Recent decisions affecting current work:
 - [05-01]: ProbeFS.move() raises FileExistsError when dst is an existing directory — prevents silent mv-into-directory behavior
 - [05-01]: send2trash imported at module top as _send2trash — fast failure at startup, not mid-operation
 - [05-01]: new_dir() relies on fsspec LocalFileSystem.mkdir native FileExistsError — no redundant existence check needed
+- [Phase 05]: ConfirmDialog and InputDialog use DEFAULT_CSS on the class — self-contained, no TCSS file edits needed
+- [Phase 05]: dismiss() called without await in all ModalScreen message handlers — awaiting raises ScreenError in Textual 8.0.2
+- [Phase 05]: Escape handled via on_key() on both dialogs — Input widget has no built-in Escape binding in Textual 8.x
 
 ### Pending Todos
 
@@ -108,5 +112,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: Completed 05-01-PLAN.md (ProbeFS FAL extended with 6 file operation methods + send2trash 2.1.0)
+Stopped at: Completed 05-02-PLAN.md (ConfirmDialog and InputDialog modal dialog widgets)
 Resume file: None
