@@ -109,10 +109,11 @@ class InputDialog(ModalScreen[str | None]):
     }
     """
 
-    def __init__(self, prompt: str, initial_value: str = "") -> None:
+    def __init__(self, prompt: str, initial_value: str = "", select_all: bool = True) -> None:
         super().__init__()
         self._prompt = prompt
         self._initial = initial_value
+        self._select_all = select_all
 
     def compose(self) -> ComposeResult:
         with Vertical():
@@ -122,11 +123,13 @@ class InputDialog(ModalScreen[str | None]):
             yield Button("Cancel", id="cancel")
 
     def on_mount(self) -> None:
-        """Select all pre-populated text so user can start typing immediately."""
-        # Textual's AUTO_FOCUS="*" focuses the first focusable widget automatically.
-        # action_select_all() is called after focus so the initial value is selected.
+        """Position cursor in pre-populated input. Select all for name entry;
+        cursor at end for path entry (move/copy) so user can edit the path."""
         inp = self.query_one("#name-input", Input)
-        inp.action_select_all()
+        if self._select_all:
+            inp.action_select_all()
+        else:
+            inp.cursor_position = len(inp.value)
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
         """Enter key in the Input field submits the dialog."""

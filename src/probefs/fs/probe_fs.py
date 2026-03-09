@@ -78,19 +78,11 @@ class ProbeFS:
         """Move file or directory to dst.
 
         Wraps shutil.move — handles cross-device moves and directories.
+        If dst is an existing directory, src is moved inside it keeping its name
+        (standard mv semantics, same as copy behavior).
 
-        IMPORTANT: If dst is an existing directory, shutil.move silently places
-        src INSIDE dst (mv semantics). To prevent silent path changes, this method
-        raises FileExistsError when dst is an existing directory.
-
-        Raises FileExistsError if dst is an existing directory.
         Raises OSError / shutil.Error on other failures.
         """
-        if self._fs.isdir(dst):
-            raise FileExistsError(
-                f"Destination {dst!r} already exists as a directory. "
-                f"Provide the full destination path including the new name."
-            )
         shutil.move(src, dst)
 
     def rename(self, src: str, new_name: str) -> None:

@@ -157,7 +157,7 @@ class MainScreen(Screen):
                 self._do_copy(src, dst)
 
         self.app.push_screen(
-            InputDialog(f"Copy '{basename}' to:", initial_value=initial),
+            InputDialog(f"Copy '{basename}' to:", initial_value=initial, select_all=False),
             _on_dst,
         )
 
@@ -187,7 +187,7 @@ class MainScreen(Screen):
                 self._do_move(src, dst)
 
         self.app.push_screen(
-            InputDialog(f"Move '{basename}' to:", initial_value=initial),
+            InputDialog(f"Move '{basename}' to:", initial_value=initial, select_all=False),
             _on_dst,
         )
 
