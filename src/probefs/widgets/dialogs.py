@@ -9,7 +9,41 @@ from __future__ import annotations
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
-from textual.widgets import Button, Input, Label
+from textual.widgets import Button, Input, Label, Static
+
+_HELP_TEXT = """\
+[bold $accent]Navigation[/]
+  [bold]j / ↓[/]       Move cursor down
+  [bold]k / ↑[/]       Move cursor up
+  [bold]l / Enter[/]   Enter directory / open file
+  [bold]h / ←[/]       Go up to parent directory
+  [bold]ctrl+o[/]      Navigate back in history
+  [bold]ctrl+i[/]      Navigate forward in history
+  [bold]g[/]           Go to path (jump anywhere)
+
+[bold $accent]View[/]
+  [bold].[/]           Toggle hidden files (dotfiles)
+  [bold]s[/]           Cycle sort mode  (name ↑ → name ↓ → size ↓ → date ↓)
+  [bold]/[/]           Filter files by name  (Esc cancel · Enter keep)
+
+[bold $accent]File Operations[/]
+  [bold]y[/]           Copy selected item
+  [bold]p[/]           Move selected item
+  [bold]d[/]           Delete — sends to OS Trash (safe, reversible)
+  [bold]r[/]           Rename selected item
+  [bold]n[/]           New file in current directory
+  [bold]ctrl+n[/]      New directory in current directory
+
+[bold $accent]Clipboard & Launch[/]
+  [bold]Y[/]           Copy current path to clipboard
+  [bold]o[/]           Open with system default application
+  [bold]![/]           Drop to shell in current directory
+
+[bold $accent]App[/]
+  [bold]?[/]           Show this help
+  [bold]ctrl+q[/]      Quit
+  [bold]ctrl+c[/]      Quit (alternate)
+"""
 
 
 class ConfirmDialog(ModalScreen[bool]):
@@ -161,4 +195,48 @@ class InputDialog(ModalScreen[str | None]):
 
     def on_key(self, event) -> None:
         if event.key == "escape":
+            self.dismiss(None)
+
+
+class HelpDialog(ModalScreen[None]):
+    """Full keybinding reference. Dismissed by Escape, Enter, or any key."""
+
+    DEFAULT_CSS = """
+    HelpDialog {
+        align: center middle;
+    }
+    HelpDialog > Vertical {
+        background: $surface;
+        padding: 1 2;
+        width: 60;
+        height: auto;
+        max-height: 90%;
+        border: tall $primary;
+    }
+    HelpDialog #help-title {
+        text-align: center;
+        width: 100%;
+        color: $text;
+        margin-bottom: 1;
+    }
+    HelpDialog Static {
+        width: 100%;
+    }
+    HelpDialog Button {
+        width: 100%;
+        margin-top: 1;
+    }
+    """
+
+    def compose(self) -> ComposeResult:
+        with Vertical():
+            yield Label("probefs — keyboard reference", id="help-title")
+            yield Static(_HELP_TEXT, markup=True)
+            yield Button("Close", variant="primary", id="close")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        self.dismiss(None)
+
+    def on_key(self, event) -> None:
+        if event.key in ("escape", "enter", "question_mark"):
             self.dismiss(None)

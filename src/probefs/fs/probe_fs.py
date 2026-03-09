@@ -202,6 +202,58 @@ class ProbeFS:
             raise OSError(result.stderr.strip() or "pdftotext failed")
         return result.stdout
 
+    def open_with_default(self, path: str) -> None:
+        """Open a file or directory with the OS default application.
+
+        macOS: open(1). Linux: xdg-open. Windows: os.startfile.
+        Non-blocking — the default app launches in the background.
+
+        Raises OSError if the system command fails.
+        FAL boundary — callers must not invoke subprocess/os.startfile directly.
+        """
+        import subprocess
+        import sys
+
+        if sys.platform == "darwin":
+            subprocess.run(["open", path], check=True)
+        elif sys.platform == "win32":
+            os.startfile(path)  # type: ignore[attr-defined]
+        else:
+            subprocess.run(["xdg-open", path], check=True)
+
+    def copy_to_clipboard(self, text: str) -> None:
+        """Copy text to the system clipboard.
+
+        macOS: pbcopy. Linux: xclip (preferred) or xsel. Windows: clip.
+        Raises OSError if no clipboard tool is available on the platform.
+
+        FAL boundary — callers must not invoke subprocess directly.
+        Always call from the main thread (fast, no disk I/O).
+        """
+        import subprocess
+        import sys
+
+        encoded = text.encode()
+        if sys.platform == "darwin":
+            subprocess.run(["pbcopy"], input=encoded, check=True)
+        elif sys.platform == "win32":
+            subprocess.run(["clip"], input=encoded, check=True)
+        else:
+            if shutil.which("xclip"):
+                subprocess.run(
+                    ["xclip", "-selection", "clipboard"], input=encoded, check=True
+                )
+            elif shutil.which("xsel"):
+                subprocess.run(
+                    ["xsel", "--clipboard", "--input"], input=encoded, check=True
+                )
+            else:
+                raise OSError(
+                    "No clipboard tool found — install xclip or xsel\n"
+                    "  Ubuntu/Debian: sudo apt install xclip\n"
+                    "  Fedora:        sudo dnf install xclip"
+                )
+
     def read_archive_listing(self, path: str) -> str:
         """List contents of a ZIP or tar archive for preview.
 

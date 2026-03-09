@@ -102,15 +102,24 @@ That's it. probefs opens in your current directory.
 |-----|--------|
 | `j` / `↓` | Move cursor down |
 | `k` / `↑` | Move cursor up |
-| `l` / `Enter` | Enter directory / open |
+| `l` / `Enter` | Enter directory / open file |
 | `h` / `Backspace` | Go up to parent directory |
+| `Ctrl+O` | Navigate back in history |
+| `Ctrl+I` | Navigate forward in history |
+| `g` | Go to path (jump anywhere) |
 | `.` | Toggle hidden files (dotfiles) |
+| `s` | Cycle sort mode |
+| `/` | Filter files by name |
 | `y` | Copy selected item |
 | `p` | Move selected item |
 | `d` | Delete (send to Trash) |
 | `r` | Rename selected item |
 | `n` | New file in current directory |
 | `Ctrl+N` | New directory in current directory |
+| `Y` | Copy current path to clipboard |
+| `o` | Open with system default app |
+| `!` | Drop to shell in current directory |
+| `?` | Show help / keybinding reference |
 | `Ctrl+Q` / `Ctrl+C` | Quit |
 
 ---

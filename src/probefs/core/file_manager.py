@@ -37,6 +37,8 @@ class FileManagerCore:
         self.cursor_index: int = 0
         self.show_hidden: bool = False
         self.sort_mode: str = "name_asc"
+        self._back: list[str] = []   # history stack — previous directories
+        self._fwd: list[str] = []    # forward stack — cleared on new navigation
 
     def next_sort_mode(self) -> str:
         """Cycle to the next sort mode and return it."""
@@ -62,6 +64,7 @@ class FileManagerCore:
         Returns:
             The new cwd as a string.
         """
+        self._push_back()
         self.cwd = str(PurePosixPath(self.cwd) / entry_name)
         self.cursor_index = 0
         return self.cwd
@@ -78,6 +81,49 @@ class FileManagerCore:
         """
         parent = self.parent_path
         if parent != self.cwd:  # At root, parent == cwd == "/"
+            self._push_back()
             self.cwd = parent
         self.cursor_index = 0
         return self.cwd
+
+    def go_back(self) -> str | None:
+        """Navigate to the previous directory in history.
+
+        Returns the new cwd string, or None if there is no history to go back to.
+        """
+        if not self._back:
+            return None
+        self._fwd.append(self.cwd)
+        self.cwd = self._back.pop()
+        self.cursor_index = 0
+        return self.cwd
+
+    def go_forward(self) -> str | None:
+        """Navigate to the next directory in history (after going back).
+
+        Returns the new cwd string, or None if there is no forward history.
+        """
+        if not self._fwd:
+            return None
+        self._back.append(self.cwd)
+        self.cwd = self._fwd.pop()
+        self.cursor_index = 0
+        return self.cwd
+
+    def jump_to(self, path: str) -> str:
+        """Navigate directly to an absolute path, updating history.
+
+        No filesystem I/O is performed — caller must validate the path first.
+
+        Returns:
+            The new cwd as a string.
+        """
+        self._push_back()
+        self.cwd = path
+        self.cursor_index = 0
+        return self.cwd
+
+    def _push_back(self) -> None:
+        """Push current cwd onto back stack and clear forward stack."""
+        self._back.append(self.cwd)
+        self._fwd.clear()

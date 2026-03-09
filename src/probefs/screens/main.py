@@ -18,7 +18,7 @@ from textual.widgets import Footer
 
 from probefs.core.file_manager import FileManagerCore, SORT_LABELS
 from probefs.fs.probe_fs import ProbeFS
-from probefs.widgets.dialogs import ConfirmDialog, InputDialog
+from probefs.widgets.dialogs import ConfirmDialog, HelpDialog, InputDialog
 from probefs.widgets.directory_list import DirectoryList
 from probefs.widgets.filter_bar import FilterBar
 from probefs.widgets.preview_pane import PreviewPane
@@ -222,7 +222,71 @@ class MainScreen(Screen):
         footer.display = True
         pane.focus()
 
-    # -- File operation actions (Phase 5) --
+    # -- Navigation history --
+
+    def action_go_back(self) -> None:
+        """Navigate back in history. ctrl+o binding."""
+        if self.core.go_back():
+            self._load_panes()
+
+    def action_go_forward(self) -> None:
+        """Navigate forward in history. ctrl+i binding."""
+        if self.core.go_forward():
+            self._load_panes()
+
+    def action_goto(self) -> None:
+        """Jump to an arbitrary path via InputDialog. g binding."""
+        def _on_path(path: str | None) -> None:
+            if not path:
+                return
+            path = path.strip()
+            if not self.core.fs.isdir(path):
+                self.notify(f"Not a directory: {path}", severity="warning")
+                return
+            self.core.jump_to(path)
+            self._load_panes()
+
+        self.app.push_screen(
+            InputDialog("Go to path:", initial_value=self.core.cwd, select_all=False),
+            _on_path,
+        )
+
+    # -- Clipboard & launch --
+
+    def action_copy_path(self) -> None:
+        """Copy current entry's full path to clipboard. Y binding."""
+        path = self._get_highlighted_path() or self.core.cwd
+        try:
+            self.core.fs.copy_to_clipboard(path)
+            self.notify(f"Copied: {path}")
+        except OSError as exc:
+            self.notify(str(exc), severity="error")
+
+    def action_open_default(self) -> None:
+        """Open highlighted entry with the system default app. o binding."""
+        path = self._get_highlighted_path()
+        if not path:
+            return
+        try:
+            self.core.fs.open_with_default(path)
+        except OSError as exc:
+            self.notify(f"Cannot open: {exc}", severity="error")
+
+    def action_shell(self) -> None:
+        """Drop to a shell in the current directory. ! binding."""
+        import os
+        import subprocess
+        shell = os.environ.get("SHELL", "/bin/sh")
+        with self.app.suspend():
+            subprocess.run([shell], cwd=self.core.cwd)
+
+    # -- Help --
+
+    def action_help(self) -> None:
+        """Show keybinding reference. ? binding."""
+        self.app.push_screen(HelpDialog())
+
+    # -- File operation actions --
     # Pattern: action method collects input via modal, then fires a named @work worker.
     # Workers run in threads; all main-thread calls use call_from_thread.
 
