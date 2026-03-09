@@ -48,11 +48,12 @@ Plans:
   3. Symlinks display their target path; broken symlinks appear visually distinct from valid symlinks
   4. User can toggle hidden dotfiles on and off with a single key press
   5. Nerd Font icons appear when `icons: nerd` is set in config; ASCII symbol fallback is active by default with no config required
-**Plans**: 3 plans
+**Plans**: 4 plans
 Plans:
-- [ ] 01-01-PLAN.md — uv scaffold + ProbeFS FAL
-- [ ] 01-02-PLAN.md — FileManagerCore navigation state machine (TDD)
-- [ ] 01-03-PLAN.md — Three-pane Textual UI with async navigation
+- [ ] 02-01-PLAN.md — TDD: file categorization and metadata formatting utilities
+- [ ] 02-02-PLAN.md — IconSet strategy pattern (ASCII/Nerd/YAML) + ProbeFS.exists()
+- [ ] 02-03-PLAN.md — DirectoryList DataTable rewrite with Rich Text row builder
+- [ ] 02-04-PLAN.md — show_hidden toggle wiring + visual verification checkpoint
 
 ### Phase 3: Theme System
 **Goal**: Users can switch the active color theme and write custom themes that are shareable via the theme metadata format
@@ -135,7 +136,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Core Scaffold and Async Architecture | 0/TBD | Complete    | 2026-03-09 |
-| 2. Directory Rendering and Icon System | 0/TBD | Not started | - |
+| 2. Directory Rendering and Icon System | 0/4 | Not started | - |
 | 3. Theme System | 0/TBD | Not started | - |
 | 4. Keybinding System and Config Infrastructure | 0/TBD | Not started | - |
 | 5. File Operations and Safety | 0/TBD | Not started | - |
