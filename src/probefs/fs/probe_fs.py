@@ -1,0 +1,36 @@
+"""ProbeFS — Filesystem Abstraction Layer wrapping fsspec.
+
+ALL filesystem I/O in probefs goes through this class.
+Widgets and FileManagerCore must never call os, pathlib, or shutil directly.
+This boundary is what makes the SFTP backend a drop-in replacement later.
+"""
+from __future__ import annotations
+
+import fsspec
+
+
+class ProbeFS:
+    """Single filesystem gateway. Wraps fsspec.AbstractFileSystem."""
+
+    def __init__(self, protocol: str = "file", **kwargs: object) -> None:
+        # Single instance — fsspec LocalFileSystem is reusable; re-instantiating
+        # per call wastes memory and bypasses directory caching.
+        self._fs = fsspec.filesystem(protocol, **kwargs)
+
+    def ls(self, path: str, *, detail: bool = True) -> list[dict]:
+        """List directory entries.
+
+        Returns list of dicts with at minimum: name (str), type ('file'|'directory'),
+        size (int). LocalFileSystem also returns mtime, mode, uid, gid, islink.
+        Use .get() with defaults for any key beyond name/type — other backends
+        may not provide them.
+        """
+        return self._fs.ls(path, detail=detail)
+
+    def info(self, path: str) -> dict:
+        """Return metadata dict for a single path."""
+        return self._fs.info(path)
+
+    def isdir(self, path: str) -> bool:
+        """Return True if path is a directory."""
+        return self._fs.isdir(path)
