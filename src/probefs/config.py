@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import platformdirs
 from ruamel.yaml import YAML
 from ruamel.yaml.error import YAMLError
 
@@ -10,11 +9,9 @@ from ruamel.yaml.error import YAMLError
 def config_path() -> Path:
     """Return the user's probefs.yaml config file path.
 
-    macOS:  ~/Library/Application Support/probefs/probefs.yaml
-    Linux:  ~/.config/probefs/probefs.yaml  (respects XDG_CONFIG_HOME)
-    Windows: %APPDATA%/probefs/probefs.yaml
+    ~/.probefs/probefs.yaml on all platforms.
     """
-    return Path(platformdirs.user_config_dir("probefs")) / "probefs.yaml"
+    return Path.home() / ".probefs" / "probefs.yaml"
 
 
 def load_config() -> dict:
