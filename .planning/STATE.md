@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 
 ## Current Position
 
-Phase: 4 of 7 — IN PROGRESS
-Plan: 1 of 2 in current phase
-Status: Plan 04-01 complete — stable Binding IDs, _setup_keybindings(), docs/keybindings.md
-Last activity: 2026-03-09 — Completed 04-01 (keybinding system wired, all 11 actions remappable via YAML)
+Phase: 4 of 7 — COMPLETE
+Plan: 2 of 2 in current phase
+Status: Phase 4 complete — keybinding override system runtime-verified (replace semantics, additive mapping, zero-config defaults confirmed)
+Last activity: 2026-03-09 — Completed 04-02 (human-verified keybinding overrides end-to-end)
 
-Progress: [█████████░] 71%
+Progress: [██████████] 78%
 
 ## Performance Metrics
 
@@ -40,6 +40,7 @@ Progress: [█████████░] 71%
 | Phase 03-theme-system P02 | 3 | 2 tasks | 6 files |
 | Phase 03-theme-system P03 | 13 | 2 tasks | 2 files |
 | Phase 04-keybinding-system-and-config-infrastructure P01 | 6 | 2 tasks | 2 files |
+| Phase 04-keybinding-system-and-config-infrastructure P02 | 4 | 1 task | 0 files |
 
 ## Accumulated Context
 
@@ -88,6 +89,8 @@ Recent decisions affecting current work:
 - [Phase 04-keybinding-system-and-config-infrastructure]: Textual native Binding.id + set_keymap() used for remapping — no custom key dispatch layer
 - [Phase 04-keybinding-system-and-config-infrastructure]: Separate IDs per physical key variant (probefs.cursor_down vs probefs.cursor_down_arrow) for independent remap control
 - [Phase 04-keybinding-system-and-config-infrastructure]: Space-stripping guard str(v).replace(' ', '') in _setup_keybindings() prevents Textual Pitfall 3 (spaces in keymap values)
+- [04-02]: Override replace semantics verified at runtime — users must list original key explicitly to keep it (e.g. "n,j" not just "n")
+- [04-02]: Zero-config confirmed — app starts cleanly with no keybindings section and removing it fully restores all defaults
 
 ### Pending Todos
 
@@ -100,5 +103,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: Completed 04-01-PLAN.md (stable Binding IDs wired, _setup_keybindings() added, docs/keybindings.md created)
+Stopped at: Completed 04-02-PLAN.md (keybinding override system human-verified — Phase 4 complete)
 Resume file: None
