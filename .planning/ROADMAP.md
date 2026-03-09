@@ -32,7 +32,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. User can descend into a directory by pressing l or Enter, and the three panes update to reflect the new position
   4. User can move up to the parent directory by pressing h or Backspace
   5. All directory listing calls are non-blocking — the UI stays responsive while directories load
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 01-01-PLAN.md — uv scaffold + ProbeFS FAL
+- [ ] 01-02-PLAN.md — FileManagerCore navigation state machine (TDD)
+- [ ] 01-03-PLAN.md — Three-pane Textual UI with async navigation
 
 ### Phase 2: Directory Rendering and Icon System
 **Goal**: Users can read full file metadata and distinguish file types visually through icons and color-coded entries
@@ -44,7 +48,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Symlinks display their target path; broken symlinks appear visually distinct from valid symlinks
   4. User can toggle hidden dotfiles on and off with a single key press
   5. Nerd Font icons appear when `icons: nerd` is set in config; ASCII symbol fallback is active by default with no config required
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 01-01-PLAN.md — uv scaffold + ProbeFS FAL
+- [ ] 01-02-PLAN.md — FileManagerCore navigation state machine (TDD)
+- [ ] 01-03-PLAN.md — Three-pane Textual UI with async navigation
 
 ### Phase 3: Theme System
 **Goal**: Users can switch the active color theme and write custom themes that are shareable via the theme metadata format
@@ -55,7 +63,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. User can write a YAML theme file with name, author, description, and version metadata fields and load it as the active theme
   3. At least 3 built-in themes ship with probefs (Default Dark, Default Light, and one curated extra) and each is usable without any config
   4. A theme file with an invalid schema is rejected with an informative error message rather than silently producing broken colors
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 01-01-PLAN.md — uv scaffold + ProbeFS FAL
+- [ ] 01-02-PLAN.md — FileManagerCore navigation state machine (TDD)
+- [ ] 01-03-PLAN.md — Three-pane Textual UI with async navigation
 
 ### Phase 4: Keybinding System and Config Infrastructure
 **Goal**: Users can override any action's keybinding by editing a local YAML file without modifying probefs source code
@@ -65,7 +77,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   1. User can create a local keybindings YAML file, assign a different key to any action, and the override takes effect on next launch
   2. Every bindable action in probefs has a stable string ID documented in the keybindings reference; the IDs do not change between releases
   3. User-defined keybinding overrides work correctly regardless of which of the three panes currently has focus
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 01-01-PLAN.md — uv scaffold + ProbeFS FAL
+- [ ] 01-02-PLAN.md — FileManagerCore navigation state machine (TDD)
+- [ ] 01-03-PLAN.md — Three-pane Textual UI with async navigation
 
 ### Phase 5: File Operations and Safety
 **Goal**: Users can perform all core file operations safely — with confirmation required before any destructive or irreversible action
@@ -77,7 +93,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. User can delete a file or directory; it is sent to the OS trash (not permanently deleted) after confirming a dialog
   4. User can rename a file or directory inline without leaving the current pane
   5. User can create a new empty file or a new directory in the current directory with a single keybinding each
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 01-01-PLAN.md — uv scaffold + ProbeFS FAL
+- [ ] 01-02-PLAN.md — FileManagerCore navigation state machine (TDD)
+- [ ] 01-03-PLAN.md — Three-pane Textual UI with async navigation
 
 ### Phase 6: Preview Pane and Status Bar
 **Goal**: Users can see a syntax-highlighted preview of any text file in the right pane and read key filesystem context from the status bar
@@ -87,7 +107,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   1. Focusing a text file displays a syntax-highlighted preview in the right pane without blocking navigation
   2. Focusing a directory displays that directory's file listing in the right pane
   3. The status bar always shows the current path, total item count, and available free space for the current filesystem
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 01-01-PLAN.md — uv scaffold + ProbeFS FAL
+- [ ] 01-02-PLAN.md — FileManagerCore navigation state machine (TDD)
+- [ ] 01-03-PLAN.md — Three-pane Textual UI with async navigation
 
 ### Phase 7: Distribution
 **Goal**: Users can install probefs via pip/pipx or Homebrew and get a working application with no additional setup
@@ -97,7 +121,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   1. `pip install probefs` and `pipx install probefs` succeed on a clean Python 3.10+ environment and produce a working `probefs` command
   2. `brew install probefs` succeeds on macOS from the official Homebrew tap and produces a working `probefs` command
   3. A user who installs via any of the three methods can launch probefs and navigate their filesystem with no manual post-install steps
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 01-01-PLAN.md — uv scaffold + ProbeFS FAL
+- [ ] 01-02-PLAN.md — FileManagerCore navigation state machine (TDD)
+- [ ] 01-03-PLAN.md — Three-pane Textual UI with async navigation
 
 ## Progress
 
