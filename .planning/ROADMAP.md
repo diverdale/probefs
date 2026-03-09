@@ -78,11 +78,10 @@ Plans:
   1. User can create a local keybindings YAML file, assign a different key to any action, and the override takes effect on next launch
   2. Every bindable action in probefs has a stable string ID documented in the keybindings reference; the IDs do not change between releases
   3. User-defined keybinding overrides work correctly regardless of which of the three panes currently has focus
-**Plans**: 3 plans
+**Plans**: 2 plans
 Plans:
-- [ ] 01-01-PLAN.md — uv scaffold + ProbeFS FAL
-- [ ] 01-02-PLAN.md — FileManagerCore navigation state machine (TDD)
-- [ ] 01-03-PLAN.md — Three-pane Textual UI with async navigation
+- [ ] 04-01-PLAN.md — Stable Binding IDs, q quit binding, _setup_keybindings(), and docs/keybindings.md
+- [ ] 04-02-PLAN.md — Human verification: keybinding override end-to-end
 
 ### Phase 5: File Operations and Safety
 **Goal**: Users can perform all core file operations safely — with confirmation required before any destructive or irreversible action
