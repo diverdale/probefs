@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 
 ## Current Position
 
-Phase: 5 of 7 — COMPLETE
-Plan: 4 of 4 in current phase (05-04 complete)
-Status: Phase 5 complete — all 6 file operations human-verified; Phase 6 ready to begin
-Last activity: 2026-03-09 — Completed 05-04 (human verification of all 6 file operations)
+Phase: 6 of 7 — IN PROGRESS
+Plan: 1 of 5 in current phase (06-01 complete)
+Status: Phase 6 in progress — 06-01 FAL methods (read_text, disk_usage) complete
+Last activity: 2026-03-09 — Completed 06-01 (ProbeFS read_text and disk_usage FAL methods)
 
-Progress: [████████████] 86%
+Progress: [████████████] 88%
 
 ## Performance Metrics
 
@@ -44,6 +44,7 @@ Progress: [████████████] 86%
 | Phase 05-file-operations-and-safety P01 | 2 | 2 tasks | 3 files |
 | Phase 05-file-operations-and-safety P02 | 1 | 1 tasks | 1 files |
 | Phase 05 P04 | 10 | 1 tasks | 3 files |
+| Phase 06-preview-pane-and-status-bar P01 | 2 | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -107,6 +108,9 @@ Recent decisions affecting current work:
 - [05-03]: _get_highlighted_path() helper centralizes get_highlighted_entry() + name extraction for all 6 action methods
 - [Phase 05]: ProbeFS.move() FileExistsError guard removed — mv-into-directory is correct behavior, consistent with copy() and shell mv
 - [Phase 05]: InputDialog.select_all parameter: True (default) for rename/new dialogs; False for copy/move to place cursor at end of pre-filled path
+- [06-01]: MAX_PREVIEW_BYTES defined at module level (not inside class) — required for use as a default argument in read_text() method signature
+- [06-01]: read_text() uses stdlib open() internally, not fsspec.open() — FAL boundary applies to callers (widgets), not ProbeFS internals; consistent with copy/move using shutil internally
+- [06-01]: Binary detection in read_text(): MIME type check first (fast, no I/O), then null-byte check in first 8 KB for extensionless binaries
 
 ### Pending Todos
 
@@ -119,5 +123,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: Completed 05-04-PLAN.md (human verification — Phase 5 complete)
+Stopped at: Completed 06-01-PLAN.md (ProbeFS FAL methods: read_text and disk_usage)
 Resume file: None
