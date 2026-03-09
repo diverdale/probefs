@@ -1,0 +1,48 @@
+# probefs configuration example
+# Copy this file to ~/.probefs/probefs.yaml and edit as needed.
+# https://github.com/diverdale/probefs/blob/master/docs/USER_GUIDE.md
+
+# ---------------------------------------------------------------------------
+# Theme
+# ---------------------------------------------------------------------------
+
+# Built-in themes: probefs-dark, probefs-light, probefs-tokyo-night
+theme: probefs-dark
+
+# Load a custom theme YAML from any path (overrides theme: above).
+# Drop themes in ~/.probefs/themes/ instead to reference them by name.
+# theme_file: ~/path/to/my-theme.yaml
+
+# ---------------------------------------------------------------------------
+# Icons
+# ---------------------------------------------------------------------------
+
+# ascii — plain symbols, works in every terminal including SSH (default)
+# nerd  — Nerd Fonts glyphs, requires a Nerd Fonts patched font
+icons: ascii
+
+# ---------------------------------------------------------------------------
+# Keybinding overrides
+# ---------------------------------------------------------------------------
+# An override replaces ALL default keys for that action.
+# To keep a default key and add a new one, list both: "j,ctrl+j"
+# Separate multiple keys with commas (no spaces).
+#
+# Available action IDs:
+#   probefs.cursor_down      default: j
+#   probefs.cursor_up        default: k
+#   probefs.enter_dir        default: l
+#   probefs.leave_dir        default: h
+#   probefs.toggle_hidden    default: .
+#   probefs.copy             default: y
+#   probefs.move             default: p
+#   probefs.delete           default: d
+#   probefs.rename           default: r
+#   probefs.new_file         default: n
+#   probefs.new_dir          default: ctrl+n
+#   probefs.quit             default: q
+
+# keybindings:
+#   probefs.cursor_down: "j"
+#   probefs.cursor_up: "k"
+#   probefs.quit: "q,ctrl+q"
