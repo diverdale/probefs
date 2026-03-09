@@ -24,5 +24,4 @@ DirectoryList DataTable {
 
 StatusBar {
     height: 1;
-    dock: bottom;
 }

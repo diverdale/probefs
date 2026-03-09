@@ -69,12 +69,12 @@ class PreviewPane(Widget):
             # Binary file detected — show informative message
             if worker.is_cancelled:
                 return
-            self.call_from_thread(self._show_file_content, f"[dim]{exc}[/dim]", is_markup=True)
+            self.app.call_from_thread(self._show_file_content, f"[dim]{exc}[/dim]", is_markup=True)
             return
         except (OSError, PermissionError) as exc:
             if worker.is_cancelled:
                 return
-            self.call_from_thread(self._show_file_content, f"[dim]Cannot read: {exc}[/dim]", is_markup=True)
+            self.app.call_from_thread(self._show_file_content, f"[dim]Cannot read: {exc}[/dim]", is_markup=True)
             return
 
         # Check if content was capped (file larger than max_bytes)
@@ -111,7 +111,7 @@ class PreviewPane(Widget):
         if worker.is_cancelled:
             return
 
-        self.call_from_thread(self._show_syntax, syntax, truncated)
+        self.app.call_from_thread(self._show_syntax, syntax, truncated)
 
     def _show_syntax(self, syntax: object, truncated: bool) -> None:
         """Main-thread: switch to file mode, update Static with Rich Syntax renderable."""
@@ -143,13 +143,13 @@ class PreviewPane(Widget):
         except (OSError, PermissionError) as exc:
             if worker.is_cancelled:
                 return
-            self.call_from_thread(self._show_file_content, f"[dim]Cannot read directory: {exc}[/dim]", is_markup=True)
+            self.app.call_from_thread(self._show_file_content, f"[dim]Cannot read directory: {exc}[/dim]", is_markup=True)
             return
 
         if worker.is_cancelled:
             return
 
-        self.call_from_thread(self._show_dir_entries, entries, screen.core.show_hidden)
+        self.app.call_from_thread(self._show_dir_entries, entries, self.screen.core.show_hidden)
 
     def _show_dir_entries(self, entries: list[dict], show_hidden: bool) -> None:
         """Main-thread: switch to directory mode, populate DirectoryList."""

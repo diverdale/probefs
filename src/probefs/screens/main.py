@@ -196,7 +196,7 @@ class MainScreen(Screen):
             self.app.notify(f"Copy failed: {exc}", severity="error")
             return
         self.app.notify("Copied")
-        self.call_from_thread(self._load_panes)
+        self.app.call_from_thread(self._load_panes)
 
     def action_move(self) -> None:
         """Move highlighted entry to a user-supplied destination path."""
@@ -226,7 +226,7 @@ class MainScreen(Screen):
             self.app.notify(f"Move failed: {exc}", severity="error")
             return
         self.app.notify("Moved")
-        self.call_from_thread(self._load_panes)
+        self.app.call_from_thread(self._load_panes)
 
     def action_delete(self) -> None:
         """Send highlighted entry to OS Trash after confirmation."""
@@ -252,7 +252,7 @@ class MainScreen(Screen):
             self.app.notify(f"Could not trash: {exc}", severity="error")
             return
         self.app.notify("Moved to Trash")
-        self.call_from_thread(self._load_panes)
+        self.app.call_from_thread(self._load_panes)
 
     def action_rename(self) -> None:
         """Rename highlighted entry in-place via InputDialog."""
@@ -281,7 +281,7 @@ class MainScreen(Screen):
             self.app.notify(f"Rename failed: {exc}", severity="error")
             return
         self.app.notify(f"Renamed to '{new_name}'")
-        self.call_from_thread(self._load_panes)
+        self.app.call_from_thread(self._load_panes)
 
     def action_new_file(self) -> None:
         """Create a new empty file in the current directory."""
@@ -308,7 +308,7 @@ class MainScreen(Screen):
             return
         name = path.split("/")[-1] if "/" in path else path
         self.app.notify(f"Created '{name}'")
-        self.call_from_thread(self._load_panes)
+        self.app.call_from_thread(self._load_panes)
 
     def action_new_dir(self) -> None:
         """Create a new directory in the current directory."""
@@ -335,4 +335,4 @@ class MainScreen(Screen):
             return
         name = path.split("/")[-1] if "/" in path else path
         self.app.notify(f"Created directory '{name}'")
-        self.call_from_thread(self._load_panes)
+        self.app.call_from_thread(self._load_panes)
