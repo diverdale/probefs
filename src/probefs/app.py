@@ -17,7 +17,7 @@ class ProbeFSApp(App):
 
     CSS_PATH = "probefs.tcss"
 
-    COMMAND_PALETTE_BINDING = None  # disable built-in palette — probefs uses its own keybindings
+    ENABLE_COMMAND_PALETTE = False  # disable built-in palette — probefs uses its own keybindings
 
     SCREENS = {"main": MainScreen}
 
