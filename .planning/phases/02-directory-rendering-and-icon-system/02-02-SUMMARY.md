@@ -87,7 +87,7 @@ Each task was committed atomically:
 1. **Task 1: Create icons package with IconSet ABC and three implementations** - `5bdc100` (feat)
 2. **Task 2: Create icon factory and add ProbeFS.exists()** - `4875de0` (feat)
 
-**Plan metadata:** (docs commit to follow)
+**Plan metadata:** `a3dcff6` (docs: complete icon-set strategy pattern plan)
 
 ## Files Created/Modified
 - `src/probefs/icons/__init__.py` - Package marker
@@ -120,6 +120,19 @@ None - no external service configuration required.
 - ProbeFS.exists() available for use in rendering/categorization code
 - Ready for 02-03 (DirectoryList rewrite using DataTable) which consumes IconSet and ProbeFS.exists()
 - Ready for 02-04 (rendering/columns.py build_row() and get_category()) which uses load_icon_set and IconSet.get_icon/get_color
+
+## Self-Check: PASSED
+
+- FOUND: src/probefs/icons/__init__.py
+- FOUND: src/probefs/icons/base.py
+- FOUND: src/probefs/icons/ascii_set.py
+- FOUND: src/probefs/icons/nerd_set.py
+- FOUND: src/probefs/icons/yaml_set.py
+- FOUND: src/probefs/icons/factory.py
+- FOUND: src/probefs/fs/probe_fs.py (modified)
+- FOUND: commit 5bdc100 (Task 1)
+- FOUND: commit 4875de0 (Task 2)
+- FOUND: commit a3dcff6 (metadata)
 
 ---
 *Phase: 02-directory-rendering-and-icon-system*
