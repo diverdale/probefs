@@ -13,6 +13,8 @@ from pathlib import PurePosixPath
 import fsspec
 from send2trash import send2trash as _send2trash
 
+MAX_PREVIEW_BYTES: int = 524_288  # 512 KB — module-level constant, not inside the class
+
 
 class ProbeFS:
     """Single filesystem gateway. Wraps fsspec.AbstractFileSystem."""
@@ -131,3 +133,36 @@ class ProbeFS:
         Raises OSError for permission errors or if parent does not exist.
         """
         self._fs.mkdir(path, create_parents=False)
+
+    def read_text(self, path: str, max_bytes: int = MAX_PREVIEW_BYTES) -> str:
+        """Read text content of a file for preview purposes, with a size cap.
+
+        Two-layer binary detection:
+        1. mimetypes.guess_type() for known binary extensions (images, audio, video, PDFs)
+        2. Null-byte check in first 8 KB for files with no recognized extension
+
+        Raises ValueError for binary files (caller shows "Binary file" message).
+        Raises UnicodeDecodeError if file contains non-UTF-8 bytes (caller handles).
+        Raises OSError for permission errors or missing files.
+
+        FAL boundary — widgets must call this, never open() directly.
+        The max_bytes cap prevents OOM on large log files.
+        """
+        import mimetypes
+
+        # First-pass: extension-based binary type check (fast, no I/O)
+        mime_type, _ = mimetypes.guess_type(path)
+        if mime_type and not mime_type.startswith("text/"):
+            # Recognized binary type: image/*, audio/*, video/*, application/pdf, etc.
+            raise ValueError(f"Binary file ({mime_type}) — preview unavailable")
+
+        # Second-pass: null-byte check in first 8 KB (catches binaries with no extension)
+        chunk_size = 8192
+        with open(path, "rb") as f:
+            head = f.read(chunk_size)
+        if b"\x00" in head:
+            raise ValueError("Binary file — preview unavailable")
+
+        # Read up to max_bytes — truncate silently; caller appends truncation notice
+        with open(path, "r", encoding="utf-8", errors="replace") as f:
+            return f.read(max_bytes)
