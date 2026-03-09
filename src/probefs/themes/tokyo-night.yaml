@@ -1,0 +1,16 @@
+# probefs Tokyo Night theme — inspired by the popular Tokyo Night color scheme
+name: probefs-tokyo-night
+author: probefs
+description: Dark theme based on the Tokyo Night color palette
+version: "1.0.0"
+dark: true
+primary: "#7aa2f7"
+secondary: "#bb9af7"
+background: "#1a1b26"
+surface: "#24283b"
+panel: "#1f2335"
+foreground: "#c0caf5"
+warning: "#e0af68"
+error: "#f7768e"
+success: "#9ece6a"
+accent: "#7dcfff"

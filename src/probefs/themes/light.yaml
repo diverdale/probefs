@@ -1,0 +1,16 @@
+# probefs Default Light theme
+name: probefs-light
+author: probefs
+description: Default light theme for probefs
+version: "1.0.0"
+dark: false
+primary: "#2563EB"
+secondary: "#1D4ED8"
+background: "#FFFFFF"
+surface: "#F3F4F6"
+panel: "#E5E7EB"
+foreground: "#111827"
+warning: "#D97706"
+error: "#DC2626"
+success: "#16A34A"
+accent: "#0891B2"

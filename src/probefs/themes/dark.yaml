@@ -1,0 +1,16 @@
+# probefs Default Dark theme
+name: probefs-dark
+author: probefs
+description: Default dark theme for probefs
+version: "1.0.0"
+dark: true
+primary: "#5B8DD9"
+secondary: "#2D4A8A"
+background: "#1C2023"
+surface: "#252B2E"
+panel: "#1E2528"
+foreground: "#E0E0E0"
+warning: "#FFB86C"
+error: "#FF5555"
+success: "#50FA7B"
+accent: "#8BE9FD"
