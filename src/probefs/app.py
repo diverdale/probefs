@@ -4,7 +4,7 @@ from __future__ import annotations
 from textual.app import App, InvalidThemeError
 from textual.binding import Binding
 
-from probefs.config import load_config
+from probefs.config import load_config, themes_dir
 from probefs.screens.main import MainScreen
 from probefs.theme.builtin import load_all_builtin_themes
 from probefs.theme.loader import ThemeLoader, ThemeValidationError
@@ -78,7 +78,17 @@ class ProbeFSApp(App):
         for theme in load_all_builtin_themes():
             self.register_theme(theme)
 
-        # Step 2: Optionally load and register a custom theme from config
+        # Step 2: Load and register all themes from ~/.probefs/themes/
+        td = themes_dir()
+        if td.is_dir():
+            for theme_path in sorted(td.glob("*.yaml")):
+                try:
+                    custom = ThemeLoader.load(theme_path)
+                    self.register_theme(custom)
+                except ThemeValidationError as e:
+                    print(f"Warning: Theme file {str(theme_path)!r} is invalid: {e}")
+
+        # Step 3: Optionally load and register a custom theme from config
         theme_file = config.get("theme_file")
         if theme_file:
             try:
@@ -90,7 +100,7 @@ class ProbeFSApp(App):
             except FileNotFoundError:
                 print(f"Warning: Theme file not found: {theme_file!r}")
 
-        # Step 3: Activate requested theme with fallback
+        # Step 4: Activate requested theme with fallback
         # config.get('theme') is None when key absent -> use DEFAULT_THEME
         requested = config.get("theme") or DEFAULT_THEME
         try:

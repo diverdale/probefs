@@ -276,10 +276,24 @@ theme: probefs-tokyo-night
 
 ### Custom themes
 
-To use a custom theme, create a YAML file anywhere on your system and point `theme_file` at it:
+The easiest way to create a custom theme is to drop a `.yaml` file into `~/.probefs/themes/`:
+
+```
+~/.probefs/
+  themes/
+    my-theme.yaml
+    another-theme.yaml
+```
+
+probefs scans this directory at startup and registers every `.yaml` file it finds. Activate any of them by name in your config:
 
 ```yaml
-# ~/.probefs/probefs.yaml
+theme: my-theme
+```
+
+Alternatively, point `theme_file` directly at any YAML file anywhere on your system:
+
+```yaml
 theme_file: ~/my-probefs-theme.yaml
 ```
 

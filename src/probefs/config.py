@@ -14,6 +14,11 @@ def config_path() -> Path:
     return Path.home() / ".probefs" / "probefs.yaml"
 
 
+def themes_dir() -> Path:
+    """Return the user themes directory: ~/.probefs/themes/"""
+    return Path.home() / ".probefs" / "themes"
+
+
 def load_config() -> dict:
     """Load probefs.yaml and return as a plain dict.
 

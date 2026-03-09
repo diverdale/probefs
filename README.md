@@ -153,7 +153,13 @@ theme: probefs-tokyo-night
 
 ## Custom Themes
 
-Point `theme_file` at a YAML file containing your theme definition:
+Drop a `.yaml` file into `~/.probefs/themes/` and probefs picks it up automatically on next launch. Activate it by name:
+
+```yaml
+theme: my-theme
+```
+
+Or point `theme_file` directly at any YAML file:
 
 ```yaml
 theme_file: ~/my-probefs-theme.yaml
