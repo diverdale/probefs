@@ -9,10 +9,10 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 
 ## Current Position
 
-Phase: 4 of 7 — NOT STARTED
-Plan: 0 of ? in current phase
-Status: Phase 3 complete — all 3 plans done, human verification passed
-Last activity: 2026-03-09 — Completed 03-03 (ProbeFSApp theme wiring, all 3 built-in themes verified)
+Phase: 4 of 7 — IN PROGRESS
+Plan: 1 of 2 in current phase
+Status: Plan 04-01 complete — stable Binding IDs, _setup_keybindings(), docs/keybindings.md
+Last activity: 2026-03-09 — Completed 04-01 (keybinding system wired, all 11 actions remappable via YAML)
 
 Progress: [█████████░] 71%
 
@@ -39,6 +39,7 @@ Progress: [█████████░] 71%
 | Phase 03-theme-system P01 | 2 | 3 tasks | 3 files |
 | Phase 03-theme-system P02 | 3 | 2 tasks | 6 files |
 | Phase 03-theme-system P03 | 13 | 2 tasks | 2 files |
+| Phase 04-keybinding-system-and-config-infrastructure P01 | 6 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -84,6 +85,9 @@ Recent decisions affecting current work:
 - [03-03]: load_config() called in __init__ (not on_mount) — themes must be active before TUI event loop starts
 - [03-03]: Registration before activation enforced — all themes registered before self.theme assigned (Textual requirement)
 - [03-03]: Config path changed to ~/.probefs/probefs.yaml — macOS ~/Library/Application Support not user-writable by default; ~/.probefs/ always writable and discoverable
+- [Phase 04-keybinding-system-and-config-infrastructure]: Textual native Binding.id + set_keymap() used for remapping — no custom key dispatch layer
+- [Phase 04-keybinding-system-and-config-infrastructure]: Separate IDs per physical key variant (probefs.cursor_down vs probefs.cursor_down_arrow) for independent remap control
+- [Phase 04-keybinding-system-and-config-infrastructure]: Space-stripping guard str(v).replace(' ', '') in _setup_keybindings() prevents Textual Pitfall 3 (spaces in keymap values)
 
 ### Pending Todos
 
@@ -96,5 +100,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: Completed 03-03-PLAN.md (ProbeFSApp theme wiring; Phase 3 complete — all plans done, human verification passed)
+Stopped at: Completed 04-01-PLAN.md (stable Binding IDs wired, _setup_keybindings() added, docs/keybindings.md created)
 Resume file: None
