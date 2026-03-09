@@ -5,37 +5,37 @@
 See: .planning/PROJECT.md (updated 2026-03-09)
 
 **Core value:** A fast, beautiful, keyboard-driven file browser that feels at home in any terminal — local or remote — with a theming ecosystem that makes it yours.
-**Current focus:** Phase 2 - Directory Rendering and Icon System
+**Current focus:** Phase 3 (Phase 2 complete)
 
 ## Current Position
 
-Phase: 2 of 7 (Directory Rendering and Icon System)
-Plan: 3 of 4 in current phase
-Status: In progress
-Last activity: 2026-03-09 — Completed 02-03 (DataTable DirectoryList with Rich Text row builder)
+Phase: 2 of 7 (Directory Rendering and Icon System) — COMPLETE
+Plan: 4 of 4 in current phase
+Status: Phase 2 complete
+Last activity: 2026-03-09 — Completed 02-04 (show_hidden toggle wired end-to-end; Phase 2 human-verified)
 
-Progress: [████░░░░░░] 20%
+Progress: [████████░░] 57%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 6.7 min
-- Total execution time: 0.33 hours
+- Total plans completed: 7
+- Average duration: 7.4 min
+- Total execution time: 0.86 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-core-scaffold-and-async-architecture | 3 | 20 min | 6.7 min |
-| 02-directory-rendering-and-icon-system | 1 | 4 min | 4 min |
+| 02-directory-rendering-and-icon-system | 4 | 32 min | 8 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (3 min), 01-02 (2 min), 01-03 (15 min), 02-01 (4 min)
-- Trend: -
+- Last 5 plans: 01-03 (15 min), 02-01 (4 min), 02-02 (4 min), 02-03 (2 min), 02-04 (13 min)
+- Trend: stable
 
 *Updated after each plan completion*
-| Phase 02 P03 | 2 | 2 tasks | 3 files |
+| Phase 02 P04 | 2 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -67,6 +67,9 @@ Recent decisions affecting current work:
 - [Phase 02]: dt.clear(columns=False) must be explicit in set_entries — bare dt.clear() removes column definitions
 - [Phase 02]: show_hidden filtering in set_entries() on main thread enables instant dotfile toggle without re-reading disk
 - [Phase 02]: action_cursor_down/up (not action_scroll_down/up) required for cursor_row movement in DataTable
+- [02-04]: show_hidden state stored on FileManagerCore (not DirectoryList) — widget is stateless re: filter; core owns all nav state
+- [02-04]: action_toggle_hidden re-calls _load_panes() rather than filtering in-place — simpler; exclusive=True cancels stale loads
+- [02-04]: Binding priority=True on '.' is required — without it Textual may consume '.' for focus traversal before screen action fires
 
 ### Pending Todos
 
@@ -79,5 +82,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: Completed 02-03-PLAN.md (DataTable DirectoryList with Rich Text row builder)
+Stopped at: Completed 02-04-PLAN.md (show_hidden toggle end-to-end wired; Phase 2 complete, human-verified)
 Resume file: None
