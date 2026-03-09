@@ -10,27 +10,27 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 ## Current Position
 
 Phase: 1 of 7 (Core Scaffold and Async Architecture)
-Plan: 1 of TBD in current phase
+Plan: 2 of TBD in current phase
 Status: In progress
-Last activity: 2026-03-09 — Completed 01-01 (uv scaffold + ProbeFS FAL)
+Last activity: 2026-03-09 — Completed 01-02 (FileManagerCore navigation state machine)
 
-Progress: [█░░░░░░░░░] 5%
+Progress: [██░░░░░░░░] 10%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 3 min
-- Total execution time: 0.05 hours
+- Total plans completed: 2
+- Average duration: 2.5 min
+- Total execution time: 0.08 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-core-scaffold-and-async-architecture | 1 | 3 min | 3 min |
+| 01-core-scaffold-and-async-architecture | 2 | 5 min | 2.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (3 min)
+- Last 5 plans: 01-01 (3 min), 01-02 (2 min)
 - Trend: -
 
 *Updated after each plan completion*
@@ -51,6 +51,9 @@ Recent decisions affecting current work:
 - [01-01]: requires-python set to >=3.10 for match statement support and asyncssh compatibility in future phases
 - [01-01]: ProbeFS protocol + **kwargs pattern established so SFTP is drop-in: ProbeFS('sftp', host=..., username=...)
 - [01-01]: Entry point probefs.app:main wired in pyproject.toml — app.py stub must be created before uv run probefs works
+- [01-02]: PurePosixPath used for path arithmetic — filesystem-agnostic, never calls stat/lstat, keeping descend/ascend pure
+- [01-02]: ascend() at root is silent no-op for cwd (parent == cwd == '/') but still resets cursor_index to 0
+- [01-02]: ProbeFS stored on core.fs at construction — workers call core.fs.ls() after navigation events, not inside transitions
 
 ### Pending Todos
 
@@ -63,5 +66,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: Completed 01-01-PLAN.md (uv scaffold + ProbeFS FAL)
+Stopped at: Completed 01-02-PLAN.md (FileManagerCore navigation state machine)
 Resume file: None
