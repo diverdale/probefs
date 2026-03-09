@@ -167,6 +167,41 @@ class ProbeFS:
         with open(path, "r", encoding="utf-8", errors="replace") as f:
             return f.read(max_bytes)
 
+    def read_pdf_text(self, path: str, max_pages: int = 20) -> str:
+        """Extract text from a PDF file using pdftotext (poppler).
+
+        Extracts up to max_pages pages. Poppler must be installed and pdftotext
+        must be on PATH — raises RuntimeError if not found so the caller can
+        show a friendly "install poppler" message instead of a generic error.
+
+        Raises RuntimeError if pdftotext is not on PATH.
+        Raises OSError if pdftotext fails or times out.
+
+        FAL boundary — widgets must call this, never subprocess directly.
+        Always call from a thread worker — pdftotext can be slow on large PDFs.
+        """
+        import subprocess
+
+        if shutil.which("pdftotext") is None:
+            raise RuntimeError(
+                "pdftotext not found — install poppler to enable PDF preview\n"
+                "  macOS:  brew install poppler\n"
+                "  Ubuntu: sudo apt install poppler-utils\n"
+                "  Fedora: sudo dnf install poppler-utils"
+            )
+        try:
+            result = subprocess.run(
+                ["pdftotext", "-l", str(max_pages), path, "-"],
+                capture_output=True,
+                text=True,
+                timeout=15,
+            )
+        except subprocess.TimeoutExpired:
+            raise OSError("pdftotext timed out")
+        if result.returncode != 0:
+            raise OSError(result.stderr.strip() or "pdftotext failed")
+        return result.stdout
+
     def disk_usage(self, path: str) -> int:
         """Return free disk space in bytes for the filesystem containing path.
 

@@ -62,6 +62,29 @@ class PreviewPane(Widget):
         # any worker can run, and is never reassigned after that.
         fs = self.screen.core.fs  # type: ignore[attr-defined]
 
+        # PDF preview via pdftotext (poppler) — intercept before read_text()
+        # which would reject PDFs as binary.
+        import pathlib
+        if pathlib.Path(path).suffix.lower() == ".pdf":
+            try:
+                text = fs.read_pdf_text(path)
+            except RuntimeError as exc:
+                if worker.is_cancelled:
+                    return
+                self.app.call_from_thread(self._show_file_content, f"[dim]{exc}[/dim]", is_markup=False)
+                return
+            except OSError as exc:
+                if worker.is_cancelled:
+                    return
+                self.app.call_from_thread(self._show_file_content, f"[dim]Cannot read PDF: {exc}[/dim]", is_markup=True)
+                return
+            if worker.is_cancelled:
+                return
+            from rich.syntax import Syntax
+            syntax = Syntax(text, lexer="text", theme="ansi_dark", line_numbers=True)
+            self.app.call_from_thread(self._show_syntax, syntax, False)
+            return
+
         truncated = False
         try:
             text = fs.read_text(path)
