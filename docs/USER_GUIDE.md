@@ -316,6 +316,24 @@ version:     "1.0.0"
 
 Only `name` and `primary` are required. All other color fields are optional; unspecified fields fall back to the base theme's defaults.
 
+#### Color role reference
+
+| Field | Role in probefs |
+|-------|----------------|
+| `primary` | Active borders, focused widget outlines, dialog borders, highlighted rows |
+| `secondary` | Secondary accents, subdued highlights |
+| `background` | App background behind all widgets |
+| `surface` | Dialog box backgrounds, input fields |
+| `panel` | Directory list pane backgrounds, status bar |
+| `boost` | Subtle lightening applied to focused/hovered elements over surface/panel |
+| `foreground` | Default text color |
+| `warning` | Warning notifications |
+| `error` | Error notifications, destructive button style |
+| `success` | Success notifications |
+| `accent` | Highlighted text, links, secondary interactive elements |
+
+Textual automatically derives tinted variants from each color — `$primary-lighten-1`, `$panel-darken-2`, etc. — so you only need to define the base colors and the full range is generated for free.
+
 ---
 
 ## Icons
