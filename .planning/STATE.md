@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-09)
 
 **Core value:** A fast, beautiful, keyboard-driven file browser that feels at home in any terminal — local or remote — with a theming ecosystem that makes it yours.
-**Current focus:** Phase 3 (Phase 2 complete)
+**Current focus:** Phase 4 (Phase 3 complete)
 
 ## Current Position
 
-Phase: 3 of 7 (Theme System) — IN PROGRESS
-Plan: 2 of 3 in current phase
-Status: Phase 3 plan 2 complete
-Last activity: 2026-03-09 — Completed 03-02 (built-in theme YAML package, builtin.py loader, minimal config.py)
+Phase: 4 of 7 — NOT STARTED
+Plan: 0 of ? in current phase
+Status: Phase 3 complete — all 3 plans done, human verification passed
+Last activity: 2026-03-09 — Completed 03-03 (ProbeFSApp theme wiring, all 3 built-in themes verified)
 
-Progress: [████████░░] 57%
+Progress: [█████████░] 71%
 
 ## Performance Metrics
 
@@ -38,6 +38,7 @@ Progress: [████████░░] 57%
 | Phase 02 P04 | 2 | 2 tasks | 3 files |
 | Phase 03-theme-system P01 | 2 | 3 tasks | 3 files |
 | Phase 03-theme-system P02 | 3 | 2 tasks | 6 files |
+| Phase 03-theme-system P03 | 13 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -80,6 +81,9 @@ Recent decisions affecting current work:
 - [Phase 03-theme-system]: config.py is Phase 3 minimal: load_config() returns plain dict, Phase 4 extends same module by reading more keys
 - [Phase 03-theme-system]: YAML() instance created per load_config() call (never module-level) — ruamel.yaml parser state is not thread-safe
 - [Phase 03-theme-system]: load_config() returns {} for missing file or malformed YAML — never raises exception, never crashes app startup
+- [03-03]: load_config() called in __init__ (not on_mount) — themes must be active before TUI event loop starts
+- [03-03]: Registration before activation enforced — all themes registered before self.theme assigned (Textual requirement)
+- [03-03]: Config path changed to ~/.probefs/probefs.yaml — macOS ~/Library/Application Support not user-writable by default; ~/.probefs/ always writable and discoverable
 
 ### Pending Todos
 
@@ -92,5 +96,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: Completed 03-02-PLAN.md (built-in themes YAML package, builtin.py loader, minimal config.py; Phase 3 plan 2 complete)
+Stopped at: Completed 03-03-PLAN.md (ProbeFSApp theme wiring; Phase 3 complete — all plans done, human verification passed)
 Resume file: None
