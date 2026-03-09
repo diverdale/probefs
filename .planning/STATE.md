@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 ## Current Position
 
 Phase: 3 of 7 (Theme System) — IN PROGRESS
-Plan: 1 of 3 in current phase
-Status: Phase 3 plan 1 complete
-Last activity: 2026-03-09 — Completed 03-01 (ThemeLoader validate-then-construct gateway; 45 tests passing)
+Plan: 2 of 3 in current phase
+Status: Phase 3 plan 2 complete
+Last activity: 2026-03-09 — Completed 03-02 (built-in theme YAML package, builtin.py loader, minimal config.py)
 
 Progress: [████████░░] 57%
 
@@ -37,6 +37,7 @@ Progress: [████████░░] 57%
 *Updated after each plan completion*
 | Phase 02 P04 | 2 | 2 tasks | 3 files |
 | Phase 03-theme-system P01 | 2 | 3 tasks | 3 files |
+| Phase 03-theme-system P02 | 3 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -75,6 +76,10 @@ Recent decisions affecting current work:
 - [03-01]: ThemeValidationError collects ALL errors before raising (not fail-fast) — user fixes all problems at once
 - [03-01]: YAML() instance created per-call in load() and load_from_string() — ruamel.yaml is not thread-safe at module level
 - [03-01]: Metadata fields (author, description, version) silently accepted in YAML but not stored in Theme — forward-compatible with future display
+- [Phase 03-theme-system]: probefs-tokyo-night defined as own YAML (not aliasing Textual's tokyo-night) — keeps all themes under probefs-* convention
+- [Phase 03-theme-system]: config.py is Phase 3 minimal: load_config() returns plain dict, Phase 4 extends same module by reading more keys
+- [Phase 03-theme-system]: YAML() instance created per load_config() call (never module-level) — ruamel.yaml parser state is not thread-safe
+- [Phase 03-theme-system]: load_config() returns {} for missing file or malformed YAML — never raises exception, never crashes app startup
 
 ### Pending Todos
 
@@ -87,5 +92,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: Completed 03-01-PLAN.md (ThemeLoader validate-then-construct gateway; Phase 3 plan 1 complete)
+Stopped at: Completed 03-02-PLAN.md (built-in themes YAML package, builtin.py loader, minimal config.py; Phase 3 plan 2 complete)
 Resume file: None
