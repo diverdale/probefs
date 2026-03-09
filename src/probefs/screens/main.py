@@ -14,19 +14,23 @@ from textual.message import Message
 from textual.screen import Screen
 from textual.containers import Horizontal
 
+from textual.widgets import Footer
+
 from probefs.core.file_manager import FileManagerCore
 from probefs.fs.probe_fs import ProbeFS
 from probefs.widgets.dialogs import ConfirmDialog, InputDialog
 from probefs.widgets.directory_list import DirectoryList
 from probefs.widgets.preview_pane import PreviewPane
+from probefs.widgets.status_bar import StatusBar
 
 
 class DirectoryLoaded(Message):
     """Posted by _load_panes worker when a directory listing is ready."""
 
-    def __init__(self, entries: list[dict], pane: str) -> None:
+    def __init__(self, entries: list[dict], pane: str, free_space: int = 0) -> None:
         self.entries = entries
         self.pane = pane  # "parent" or "current"
+        self.free_space = free_space  # bytes free; only populated for pane="current"
         super().__init__()
 
 
@@ -42,10 +46,12 @@ class MainScreen(Screen):
     """Three-pane file browser screen: parent | current | preview."""
 
     def compose(self) -> ComposeResult:
-        with Horizontal():
+        with Horizontal(id="panes"):
             yield DirectoryList(id="pane-parent")
             yield DirectoryList(id="pane-current")
             yield PreviewPane(id="pane-preview")
+        yield StatusBar(id="status-bar")
+        yield Footer()
 
     def on_mount(self) -> None:
         """Initialize FileManagerCore and trigger initial directory load."""
@@ -55,10 +61,15 @@ class MainScreen(Screen):
 
     @work(thread=True, exclusive=True, exit_on_error=False)
     def _load_panes(self) -> None:
-        """Worker: load both parent and current directory listings in one thread."""
+        """Worker: load both parent and current directory listings in one thread.
+
+        Also calls disk_usage() for the current directory (fast on local FS;
+        result is included in DirectoryLoaded for the 'current' pane).
+        """
         try:
             current_entries = self.core.fs.ls(self.core.cwd, detail=True)
-            self.post_message(DirectoryLoaded(current_entries, pane="current"))
+            free_space = self.core.fs.disk_usage(self.core.cwd)
+            self.post_message(DirectoryLoaded(current_entries, pane="current", free_space=free_space))
         except Exception as exc:
             self.post_message(DirectoryLoadFailed(str(exc)))
             return
@@ -70,12 +81,25 @@ class MainScreen(Screen):
             self.post_message(DirectoryLoadFailed(str(exc)))
 
     def on_directory_loaded(self, message: DirectoryLoaded) -> None:
-        """Update the appropriate pane with loaded entries."""
+        """Update the appropriate pane with loaded entries. Update status bar for current pane."""
         if message.pane == "current":
             pane = self.query_one("#pane-current", DirectoryList)
+            pane.set_entries(message.entries, show_hidden=self.core.show_hidden)
+            # Update status bar: path, item count, free space
+            status = self.query_one("#status-bar", StatusBar)
+            status.path = self.core.cwd
+            # Count visible entries (same filter as set_entries)
+            visible_count = sum(
+                1 for e in message.entries
+                if self.core.show_hidden or not e.get("name", "").rsplit("/", 1)[-1].startswith(".")
+            )
+            status.item_count = visible_count
+            if message.free_space > 0:
+                free_gb = message.free_space / (1024 ** 3)
+                status.free_space = f"{free_gb:.1f} GB free"
         else:
             pane = self.query_one("#pane-parent", DirectoryList)
-        pane.set_entries(message.entries, show_hidden=self.core.show_hidden)
+            pane.set_entries(message.entries, show_hidden=self.core.show_hidden)
 
     def on_directory_load_failed(self, message: DirectoryLoadFailed) -> None:
         """Show error notification when directory load fails."""

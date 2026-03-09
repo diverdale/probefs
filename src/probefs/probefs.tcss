@@ -1,5 +1,6 @@
-Screen {
+#panes {
     layout: horizontal;
+    height: 1fr;
 }
 #pane-parent {
     width: 1fr;
@@ -19,4 +20,9 @@ Screen {
 DirectoryList DataTable {
     height: 100%;
     background: $panel;
+}
+
+StatusBar {
+    height: 1;
+    dock: bottom;
 }
