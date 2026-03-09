@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-09)
 
 **Core value:** A fast, beautiful, keyboard-driven file browser that feels at home in any terminal — local or remote — with a theming ecosystem that makes it yours.
-**Current focus:** Phase 5 (Phase 4 complete)
+**Current focus:** Phase 6 (Phase 5 complete)
 
 ## Current Position
 
-Phase: 5 of 7 — IN PROGRESS
-Plan: 3 of 4 in current phase (05-03 complete)
-Status: Phase 5 in progress — MainScreen action wiring complete; all 6 file op keys (y/p/d/r/n/ctrl+n) wired; ready for 05-04
-Last activity: 2026-03-09 — Completed 05-03 (MainScreen file operation action wiring + ProbeFSApp keybindings)
+Phase: 5 of 7 — COMPLETE
+Plan: 4 of 4 in current phase (05-04 complete)
+Status: Phase 5 complete — all 6 file operations human-verified; Phase 6 ready to begin
+Last activity: 2026-03-09 — Completed 05-04 (human verification of all 6 file operations)
 
-Progress: [██████████] 80%
+Progress: [████████████] 86%
 
 ## Performance Metrics
 
@@ -43,6 +43,7 @@ Progress: [██████████] 80%
 | Phase 04-keybinding-system-and-config-infrastructure P02 | 4 | 1 task | 0 files |
 | Phase 05-file-operations-and-safety P01 | 2 | 2 tasks | 3 files |
 | Phase 05-file-operations-and-safety P02 | 1 | 1 tasks | 1 files |
+| Phase 05 P04 | 10 | 1 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -94,7 +95,7 @@ Recent decisions affecting current work:
 - [04-02]: Override replace semantics verified at runtime — users must list original key explicitly to keep it (e.g. "n,j" not just "n")
 - [04-02]: Zero-config confirmed — app starts cleanly with no keybindings section and removing it fully restores all defaults
 - [05-01]: shutil.copytree used for directory copy in ProbeFS.copy() — fsspec LocalFileSystem.cp_file only calls makedirs for dirs, does not copy contents
-- [05-01]: ProbeFS.move() raises FileExistsError when dst is an existing directory — prevents silent mv-into-directory behavior
+- [05-01]: ProbeFS.move() originally raised FileExistsError when dst is an existing directory — guard removed in 05-04; mv-into-directory semantics now allowed (consistent with copy() and shell mv)
 - [05-01]: send2trash imported at module top as _send2trash — fast failure at startup, not mid-operation
 - [05-01]: new_dir() relies on fsspec LocalFileSystem.mkdir native FileExistsError — no redundant existence check needed
 - [Phase 05]: ConfirmDialog and InputDialog use DEFAULT_CSS on the class — self-contained, no TCSS file edits needed
@@ -104,6 +105,8 @@ Recent decisions affecting current work:
 - [05-03]: exit_on_error=False on all 6 file op workers — prevents app crash; errors surfaced via app.notify()
 - [05-03]: priority=True on all 6 new file op Binding entries — prevents DataTable from capturing y/p/d/r/n/ctrl+n
 - [05-03]: _get_highlighted_path() helper centralizes get_highlighted_entry() + name extraction for all 6 action methods
+- [Phase 05]: ProbeFS.move() FileExistsError guard removed — mv-into-directory is correct behavior, consistent with copy() and shell mv
+- [Phase 05]: InputDialog.select_all parameter: True (default) for rename/new dialogs; False for copy/move to place cursor at end of pre-filled path
 
 ### Pending Todos
 
@@ -116,5 +119,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: Completed 05-03-PLAN.md (MainScreen file operation action wiring + ProbeFSApp keybindings)
+Stopped at: Completed 05-04-PLAN.md (human verification — Phase 5 complete)
 Resume file: None
