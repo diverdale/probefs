@@ -12,6 +12,16 @@ from pathlib import PurePosixPath
 from probefs.fs.probe_fs import ProbeFS
 
 
+SORT_MODES = ("name_asc", "name_desc", "size_desc", "date_desc")
+
+SORT_LABELS: dict[str, str] = {
+    "name_asc":  "name ↑",
+    "name_desc": "name ↓",
+    "size_desc": "size ↓",
+    "date_desc": "date ↓",
+}
+
+
 class FileManagerCore:
     """Navigation state machine for probefs.
 
@@ -26,6 +36,13 @@ class FileManagerCore:
         self.cwd: str = start_path
         self.cursor_index: int = 0
         self.show_hidden: bool = False
+        self.sort_mode: str = "name_asc"
+
+    def next_sort_mode(self) -> str:
+        """Cycle to the next sort mode and return it."""
+        idx = SORT_MODES.index(self.sort_mode)
+        self.sort_mode = SORT_MODES[(idx + 1) % len(SORT_MODES)]
+        return self.sort_mode
 
     @property
     def parent_path(self) -> str:

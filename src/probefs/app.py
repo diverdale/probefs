@@ -41,6 +41,10 @@ class ProbeFSApp(App):
                 priority=True, show=False, id="probefs.leave_dir_backspace"),  # duplicate of h
         Binding(".", "screen.toggle_hidden", "Hidden",
                 priority=True, show=True, id="probefs.toggle_hidden"),
+        Binding("s", "screen.sort", "Sort",
+                priority=True, show=True, id="probefs.sort"),
+        Binding("/", "screen.filter", "Filter",
+                priority=True, show=True, id="probefs.filter"),
         Binding("q", "quit", "Quit",
                 priority=True, show=True, id="probefs.quit"),
         Binding("ctrl+c", "quit", "Quit",

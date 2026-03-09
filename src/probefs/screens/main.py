@@ -16,10 +16,11 @@ from textual.containers import Horizontal
 
 from textual.widgets import Footer
 
-from probefs.core.file_manager import FileManagerCore
+from probefs.core.file_manager import FileManagerCore, SORT_LABELS
 from probefs.fs.probe_fs import ProbeFS
 from probefs.widgets.dialogs import ConfirmDialog, InputDialog
 from probefs.widgets.directory_list import DirectoryList
+from probefs.widgets.filter_bar import FilterBar
 from probefs.widgets.preview_pane import PreviewPane
 from probefs.widgets.status_bar import StatusBar
 
@@ -51,6 +52,7 @@ class MainScreen(Screen):
             yield DirectoryList(id="pane-current")
             yield PreviewPane(id="pane-preview")
         yield StatusBar(id="status-bar")
+        yield FilterBar(id="filter-bar")
         yield Footer()
 
     def on_mount(self) -> None:
@@ -84,15 +86,15 @@ class MainScreen(Screen):
         """Update the appropriate pane with loaded entries. Update status bar for current pane."""
         if message.pane == "current":
             pane = self.query_one("#pane-current", DirectoryList)
-            pane.set_entries(message.entries, show_hidden=self.core.show_hidden)
-            # Update status bar: path, item count, free space
+            visible_count = pane.set_entries(
+                message.entries,
+                show_hidden=self.core.show_hidden,
+                sort_mode=self.core.sort_mode,
+            )
+            # Update status bar: path, sort label, item count, free space
             status = self.query_one("#status-bar", StatusBar)
             status.path = self.core.cwd
-            # Count visible entries (same filter as set_entries)
-            visible_count = sum(
-                1 for e in message.entries
-                if self.core.show_hidden or not e.get("name", "").rsplit("/", 1)[-1].startswith(".")
-            )
+            status.sort_mode = SORT_LABELS[self.core.sort_mode]
             status.item_count = visible_count
             if message.free_space > 0:
                 free_gb = message.free_space / (1024 ** 3)
@@ -152,10 +154,57 @@ class MainScreen(Screen):
     def action_toggle_hidden(self) -> None:
         """Toggle hidden dotfile visibility. '.' key binding."""
         self.core.show_hidden = not self.core.show_hidden
-        # No disk re-read — set_entries filters from the already-loaded _entries.
-        # Re-trigger _load_panes to reload fresh (entries are already cached in
-        # memory by the OS so this is fast; no actual disk I/O bottleneck).
         self._load_panes()
+
+    def action_sort(self) -> None:
+        """Cycle sort mode. 's' key binding."""
+        new_mode = self.core.next_sort_mode()
+        pane = self.query_one("#pane-current", DirectoryList)
+        visible_count = pane.reapply(self.core.show_hidden, new_mode)
+        status = self.query_one("#status-bar", StatusBar)
+        status.sort_mode = SORT_LABELS[new_mode]
+        status.item_count = visible_count
+
+    def action_filter(self) -> None:
+        """Open filter bar. '/' key binding."""
+        fb = self.query_one("#filter-bar", FilterBar)
+        footer = self.query_one(Footer)
+        footer.display = False
+        fb.activate()
+
+    def _deactivate_filter(self) -> None:
+        """Clear filter, restore Footer, refocus current pane."""
+        pane = self.query_one("#pane-current", DirectoryList)
+        visible_count = pane.set_filter("")
+        status = self.query_one("#status-bar", StatusBar)
+        status.set_filter_active(False)
+        status.item_count = visible_count
+        footer = self.query_one(Footer)
+        footer.display = True
+        self.query_one("#pane-current", DirectoryList).focus()
+
+    def on_filter_bar_filter_changed(self, event: FilterBar.FilterChanged) -> None:
+        """Live update as user types in filter bar."""
+        pane = self.query_one("#pane-current", DirectoryList)
+        visible_count = pane.set_filter(event.text)
+        status = self.query_one("#status-bar", StatusBar)
+        status.set_filter_active(bool(event.text))
+        status.item_count = visible_count
+
+    def on_filter_bar_filter_cleared(self, event: FilterBar.FilterCleared) -> None:
+        """Escape pressed — remove filter, restore Footer."""
+        self._deactivate_filter()
+
+    def on_filter_bar_filter_submitted(self, event: FilterBar.FilterSubmitted) -> None:
+        """Enter pressed — keep filter active, close bar, refocus pane."""
+        pane = self.query_one("#pane-current", DirectoryList)
+        visible_count = pane.set_filter(event.text)
+        status = self.query_one("#status-bar", StatusBar)
+        status.set_filter_active(bool(event.text))
+        status.item_count = visible_count
+        footer = self.query_one(Footer)
+        footer.display = True
+        pane.focus()
 
     # -- File operation actions (Phase 5) --
     # Pattern: action method collects input via modal, then fires a named @work worker.
