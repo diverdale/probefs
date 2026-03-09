@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 ## Current Position
 
 Phase: 6 of 7 — IN PROGRESS
-Plan: 2 of 5 in current phase (06-02 complete)
-Status: Phase 6 in progress — 06-02 StatusBar widget complete
-Last activity: 2026-03-09 — Completed 06-02 (StatusBar widget with reactive path/item_count/free_space)
+Plan: 3 of 5 in current phase (06-03 complete)
+Status: Phase 6 in progress — 06-03 PreviewPane full two-mode implementation complete
+Last activity: 2026-03-09 — Completed 06-03 (PreviewPane with ContentSwitcher, Rich Syntax file preview, DirectoryList directory preview)
 
 Progress: [████████████] 88%
 
@@ -46,6 +46,7 @@ Progress: [████████████] 88%
 | Phase 05 P04 | 10 | 1 tasks | 3 files |
 | Phase 06-preview-pane-and-status-bar P01 | 2 | 2 tasks | 1 files |
 | Phase 06-preview-pane-and-status-bar P02 | 1 | 1 tasks | 1 files |
+| Phase 06-preview-pane-and-status-bar P03 | 1 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -113,6 +114,10 @@ Recent decisions affecting current work:
 - [06-01]: read_text() uses stdlib open() internally, not fsspec.open() — FAL boundary applies to callers (widgets), not ProbeFS internals; consistent with copy/move using shutil internally
 - [06-01]: Binary detection in read_text(): MIME type check first (fast, no I/O), then null-byte check in first 8 KB for extensionless binaries
 - [Phase 06]: No dock: bottom in StatusBar DEFAULT_CSS — dock set externally by probefs.tcss for independent testability
+- [06-03]: ContentSwitcher(initial='preview-file') — file mode is initial state so empty dirs don't show blank DirectoryList on launch
+- [06-03]: app.get_screen('main').core.fs in workers — avoids storing ProbeFS reference on PreviewPane, decouples widget from initialization order
+- [06-03]: Syntax(text, lexer=...) over Syntax.from_path() — from_path() bypasses ProbeFS FAL boundary and 512KB size cap
+- [06-03]: rich.console.Group composes Syntax + truncation notice — Static.update() accepts only one renderable at a time
 
 ### Pending Todos
 
@@ -125,5 +130,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: Completed 06-02-PLAN.md (StatusBar widget with reactive path/item_count/free_space)
+Stopped at: Completed 06-03-PLAN.md (PreviewPane full two-mode implementation with Rich Syntax and DirectoryList)
 Resume file: None
