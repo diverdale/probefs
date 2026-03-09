@@ -117,11 +117,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | THEME-02 | Phase 3 | Pending |
 | THEME-03 | Phase 3 | Pending |
 | THEME-04 | Phase 3 | Pending |
-| THEME-05 | Phase 3 | Pending |
-| THEME-06 | Phase 3 | Pending |
-| THEME-07 | Phase 3 | Pending |
-| PREV-01 | Phase 4 | Pending |
-| PREV-02 | Phase 4 | Pending |
+| THEME-05 | Phase 2 | Pending |
+| THEME-06 | Phase 2 | Pending |
+| THEME-07 | Phase 2 | Pending |
+| PREV-01 | Phase 6 | Pending |
+| PREV-02 | Phase 6 | Pending |
 | KEYS-01 | Phase 4 | Pending |
 | KEYS-02 | Phase 4 | Pending |
 | DIST-01 | Phase 7 | Pending |
@@ -134,4 +134,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-03-09*
-*Last updated: 2026-03-09 after initial definition*
+*Last updated: 2026-03-09 after roadmap creation*
