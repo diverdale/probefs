@@ -33,6 +33,16 @@ class ProbeFS:
         """Return metadata dict for a single path."""
         return self._fs.info(path)
 
+    def exists(self, path: str) -> bool:
+        """Return True if path exists (follows symlinks).
+
+        FAL boundary method for broken symlink detection.
+        For local filesystem: equivalent to os.path.exists().
+        For SFTP backend: delegates to the remote filesystem.
+        Widgets and rendering code must use this method, not os.path.exists directly.
+        """
+        return self._fs.exists(path)
+
     def isdir(self, path: str) -> bool:
         """Return True if path is a directory."""
         return self._fs.isdir(path)
