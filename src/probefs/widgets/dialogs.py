@@ -7,7 +7,7 @@ See: Textual 8.0.2 screen.py lines 1892-1925.
 from __future__ import annotations
 
 from textual.app import ComposeResult
-from textual.containers import Vertical
+from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Button, Input, Label
 
@@ -41,7 +41,14 @@ class ConfirmDialog(ModalScreen[bool]):
         text-align: center;
         margin-bottom: 1;
     }
+    ConfirmDialog Horizontal {
+        width: 100%;
+        height: auto;
+        align: center middle;
+    }
     ConfirmDialog Button {
+        width: auto;
+        min-width: 10;
         margin: 0 1;
     }
     """
@@ -53,8 +60,9 @@ class ConfirmDialog(ModalScreen[bool]):
     def compose(self) -> ComposeResult:
         with Vertical():
             yield Label(self._message)
-            yield Button("Yes", variant="error", id="yes")
-            yield Button("Cancel", variant="primary", id="cancel")
+            with Horizontal():
+                yield Button("Yes", variant="error", id="yes")
+                yield Button("Cancel", variant="default", id="cancel")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         # No await — calling await self.dismiss() from a message handler on the
@@ -104,8 +112,15 @@ class InputDialog(ModalScreen[str | None]):
         width: 100%;
         margin-bottom: 1;
     }
+    InputDialog Horizontal {
+        width: 100%;
+        height: auto;
+        align: right middle;
+    }
     InputDialog Button {
-        margin: 0 1;
+        width: auto;
+        min-width: 10;
+        margin: 0 0 0 1;
     }
     """
 
@@ -119,8 +134,9 @@ class InputDialog(ModalScreen[str | None]):
         with Vertical():
             yield Label(self._prompt)
             yield Input(value=self._initial, id="name-input")
-            yield Button("OK", variant="primary", id="ok")
-            yield Button("Cancel", id="cancel")
+            with Horizontal():
+                yield Button("OK", variant="primary", id="ok")
+                yield Button("Cancel", variant="default", id="cancel")
 
     def on_mount(self) -> None:
         """Position cursor in pre-populated input. Select all for name entry;
