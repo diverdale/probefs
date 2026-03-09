@@ -82,8 +82,10 @@ class MainScreen(Screen):
         self, event: DirectoryList.EntryHighlighted
     ) -> None:
         """Handle cursor movement in current pane — update preview and trigger dir load."""
-        # Only react to events from the current pane (not parent pane)
-        if event.control.id != "pane-current":
+        # Only react to events from the current pane (not parent pane).
+        # event.control can be None when post_message() is used directly instead
+        # of the message bubbling through the widget tree.
+        if event.control is None or event.control.id != "pane-current":
             return
 
         entry = event.entry
