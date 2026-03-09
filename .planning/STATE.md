@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 ## Current Position
 
 Phase: 5 of 7 — IN PROGRESS
-Plan: 2 of 4 in current phase (05-02 complete)
-Status: Phase 5 in progress — ConfirmDialog and InputDialog modal widgets created; ready for MainScreen action wiring
-Last activity: 2026-03-09 — Completed 05-02 (ConfirmDialog and InputDialog ModalScreen widgets)
+Plan: 3 of 4 in current phase (05-03 complete)
+Status: Phase 5 in progress — MainScreen action wiring complete; all 6 file op keys (y/p/d/r/n/ctrl+n) wired; ready for 05-04
+Last activity: 2026-03-09 — Completed 05-03 (MainScreen file operation action wiring + ProbeFSApp keybindings)
 
 Progress: [██████████] 80%
 
@@ -100,6 +100,10 @@ Recent decisions affecting current work:
 - [Phase 05]: ConfirmDialog and InputDialog use DEFAULT_CSS on the class — self-contained, no TCSS file edits needed
 - [Phase 05]: dismiss() called without await in all ModalScreen message handlers — awaiting raises ScreenError in Textual 8.0.2
 - [Phase 05]: Escape handled via on_key() on both dialogs — Input widget has no built-in Escape binding in Textual 8.x
+- [05-03]: push_screen(dialog, callback) used in all action methods — push_screen_wait requires @work context; callback pattern keeps action methods synchronous
+- [05-03]: exit_on_error=False on all 6 file op workers — prevents app crash; errors surfaced via app.notify()
+- [05-03]: priority=True on all 6 new file op Binding entries — prevents DataTable from capturing y/p/d/r/n/ctrl+n
+- [05-03]: _get_highlighted_path() helper centralizes get_highlighted_entry() + name extraction for all 6 action methods
 
 ### Pending Todos
 
@@ -112,5 +116,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: Completed 05-02-PLAN.md (ConfirmDialog and InputDialog modal dialog widgets)
+Stopped at: Completed 05-03-PLAN.md (MainScreen file operation action wiring + ProbeFSApp keybindings)
 Resume file: None
