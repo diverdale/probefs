@@ -222,7 +222,9 @@ probefs reads its configuration from:
 ~/.probefs/probefs.yaml
 ```
 
-The file and the `~/.probefs/` directory are both optional. If the file does not exist, all settings use their defaults. If the file exists but contains invalid YAML or unrecognized keys, the invalid portions are silently ignored — probefs will never crash on startup because of a bad config file.
+The directory and config file are created automatically on first launch with all options documented inline. For a fully commented reference, see [`probefs.yaml.example`](../probefs.yaml.example) in the repository.
+
+If the file exists but contains invalid YAML or unrecognized keys, the invalid portions are silently ignored — probefs will never crash on startup because of a bad config file.
 
 ### Full configuration reference
 

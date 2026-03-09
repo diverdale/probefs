@@ -115,7 +115,7 @@ That's it. probefs opens in your current directory.
 
 ## Configuration
 
-probefs reads `~/.probefs/probefs.yaml` on startup. The file is optional — all settings have defaults.
+probefs reads `~/.probefs/probefs.yaml` on startup. The file and directory are created automatically on first launch. For a fully commented reference, see [`probefs.yaml.example`](probefs.yaml.example) in this repo.
 
 ```yaml
 # ~/.probefs/probefs.yaml
