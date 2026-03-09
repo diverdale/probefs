@@ -166,3 +166,17 @@ class ProbeFS:
         # Read up to max_bytes — truncate silently; caller appends truncation notice
         with open(path, "r", encoding="utf-8", errors="replace") as f:
             return f.read(max_bytes)
+
+    def disk_usage(self, path: str) -> int:
+        """Return free disk space in bytes for the filesystem containing path.
+
+        Uses shutil.disk_usage internally (stdlib, no deps). Returns the .free
+        field of the usage namedtuple as an integer (bytes).
+
+        FAL boundary — callers (MainScreen worker) must use this, never shutil directly.
+        This method may block briefly on network filesystems; always call from a thread.
+
+        Raises OSError if path does not exist or stat fails.
+        """
+        usage = shutil.disk_usage(path)
+        return usage.free
