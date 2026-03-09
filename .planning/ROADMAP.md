@@ -93,11 +93,12 @@ Plans:
   3. User can delete a file or directory; it is sent to the OS trash (not permanently deleted) after confirming a dialog
   4. User can rename a file or directory inline without leaving the current pane
   5. User can create a new empty file or a new directory in the current directory with a single keybinding each
-**Plans**: 3 plans
+**Plans**: 4 plans
 Plans:
-- [ ] 01-01-PLAN.md — uv scaffold + ProbeFS FAL
-- [ ] 01-02-PLAN.md — FileManagerCore navigation state machine (TDD)
-- [ ] 01-03-PLAN.md — Three-pane Textual UI with async navigation
+- [ ] 05-01-PLAN.md — send2trash dependency + ProbeFS FAL extensions (copy, move, trash, rename, new_file, new_dir)
+- [ ] 05-02-PLAN.md — Dialog widgets: ConfirmDialog and InputDialog ModalScreen classes
+- [ ] 05-03-PLAN.md — MainScreen action wiring + app.py keybindings + keybindings.md update
+- [ ] 05-04-PLAN.md — Human verification: all 6 file operations end-to-end
 
 ### Phase 6: Preview Pane and Status Bar
 **Goal**: Users can see a syntax-highlighted preview of any text file in the right pane and read key filesystem context from the status bar
@@ -138,6 +139,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 2. Directory Rendering and Icon System | 0/4 | Not started | - |
 | 3. Theme System | 0/TBD | Not started | - |
 | 4. Keybinding System and Config Infrastructure | 0/TBD | Not started | - |
-| 5. File Operations and Safety | 0/TBD | Not started | - |
+| 5. File Operations and Safety | 0/4 | Not started | - |
 | 6. Preview Pane and Status Bar | 0/TBD | Not started | - |
 | 7. Distribution | 0/TBD | Not started | - |
