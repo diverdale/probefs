@@ -66,9 +66,9 @@ Plans:
   4. A theme file with an invalid schema is rejected with an informative error message rather than silently producing broken colors
 **Plans**: 3 plans
 Plans:
-- [ ] 01-01-PLAN.md — uv scaffold + ProbeFS FAL
-- [ ] 01-02-PLAN.md — FileManagerCore navigation state machine (TDD)
-- [ ] 01-03-PLAN.md — Three-pane Textual UI with async navigation
+- [ ] 03-01-PLAN.md — ThemeLoader with Color.parse validation (TDD)
+- [ ] 03-02-PLAN.md — Built-in theme YAMLs + builtin.py loader + config.py
+- [ ] 03-03-PLAN.md — App wiring: _setup_themes() + human verification checkpoint
 
 ### Phase 4: Keybinding System and Config Infrastructure
 **Goal**: Users can override any action's keybinding by editing a local YAML file without modifying probefs source code
