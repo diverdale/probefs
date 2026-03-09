@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-09)
 
 **Core value:** A fast, beautiful, keyboard-driven file browser that feels at home in any terminal — local or remote — with a theming ecosystem that makes it yours.
-**Current focus:** Phase 1 - Core Scaffold and Async Architecture
+**Current focus:** Phase 2 - Directory Rendering and Icon System
 
 ## Current Position
 
-Phase: 1 of 7 (Core Scaffold and Async Architecture)
-Plan: 3 of TBD in current phase
+Phase: 2 of 7 (Directory Rendering and Icon System)
+Plan: 2 of 4 in current phase
 Status: In progress
-Last activity: 2026-03-09 — Completed 01-03 (Three-pane TUI with async navigation)
+Last activity: 2026-03-09 — Completed 02-01 (File type categorization and metadata formatting)
 
-Progress: [███░░░░░░░] 15%
+Progress: [████░░░░░░] 20%
 
 ## Performance Metrics
 
@@ -28,9 +28,10 @@ Progress: [███░░░░░░░] 15%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-core-scaffold-and-async-architecture | 3 | 20 min | 6.7 min |
+| 02-directory-rendering-and-icon-system | 1 | 4 min | 4 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (3 min), 01-02 (2 min), 01-03 (15 min)
+- Last 5 plans: 01-01 (3 min), 01-02 (2 min), 01-03 (15 min), 02-01 (4 min)
 - Trend: -
 
 *Updated after each plan completion*
@@ -57,6 +58,8 @@ Recent decisions affecting current work:
 - [01-03]: exclusive=True on _load_panes worker cancels in-flight loads automatically — no manual cancellation needed
 - [01-03]: PreviewPane.CursorChanged posted via post_message() (not bubbling) — event.control is None, requires null guard in screen handler
 - [01-03]: Single _load_panes() worker loads both parent and current directories to minimize thread overhead
+- [Phase 02]: get_category fs=None FAL boundary: widgets pass ProbeFS; callers/tests use os.path.exists fallback
+- [Phase 02]: Empty destination on islink=True treated as valid symlink — aligns with Pitfall 1 (never misidentify non-symlinks)
 
 ### Pending Todos
 
@@ -69,5 +72,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: Completed 01-03-PLAN.md (Three-pane TUI with async navigation)
+Stopped at: Completed 02-01-PLAN.md (File type categorization and metadata formatting)
 Resume file: None
