@@ -6,6 +6,8 @@ This boundary is what makes the SFTP backend a drop-in replacement later.
 """
 from __future__ import annotations
 
+import os
+
 import fsspec
 
 
@@ -34,3 +36,11 @@ class ProbeFS:
     def isdir(self, path: str) -> bool:
         """Return True if path is a directory."""
         return self._fs.isdir(path)
+
+    def home(self) -> str:
+        """Return the user's home directory path.
+
+        FAL boundary helper — callers (screens, widgets) must not use os/pathlib directly.
+        For SFTP backends, this would return the remote home path.
+        """
+        return os.path.expanduser("~")

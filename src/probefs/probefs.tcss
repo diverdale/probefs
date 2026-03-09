@@ -1,0 +1,17 @@
+Screen {
+    layout: horizontal;
+}
+#pane-parent {
+    width: 1fr;
+    height: 100%;
+    border-right: solid $panel-lighten-1;
+}
+#pane-current {
+    width: 1fr;
+    height: 100%;
+    border-right: solid $panel-lighten-1;
+}
+#pane-preview {
+    width: 2fr;
+    height: 100%;
+}
