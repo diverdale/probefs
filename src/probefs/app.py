@@ -45,10 +45,10 @@ class ProbeFSApp(App):
                 priority=True, show=True, id="probefs.sort"),
         Binding("/", "screen.filter", "Filter",
                 priority=True, show=True, id="probefs.filter"),
-        Binding("q", "quit", "Quit",
+        Binding("ctrl+q", "quit", "Quit",
                 priority=True, show=True, id="probefs.quit"),
         Binding("ctrl+c", "quit", "Quit",
-                priority=True, show=False, id="probefs.quit_ctrl_c"),  # duplicate of q
+                priority=True, show=False, id="probefs.quit_ctrl_c"),
         # File operations
         Binding("y", "screen.copy", "Copy",
                 priority=True, show=True, id="probefs.copy"),

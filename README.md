@@ -111,7 +111,7 @@ That's it. probefs opens in your current directory.
 | `r` | Rename selected item |
 | `n` | New file in current directory |
 | `Ctrl+N` | New directory in current directory |
-| `q` / `Ctrl+C` | Quit |
+| `Ctrl+Q` / `Ctrl+C` | Quit |
 
 ---
 
