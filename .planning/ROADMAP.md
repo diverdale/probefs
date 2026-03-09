@@ -108,11 +108,13 @@ Plans:
   1. Focusing a text file displays a syntax-highlighted preview in the right pane without blocking navigation
   2. Focusing a directory displays that directory's file listing in the right pane
   3. The status bar always shows the current path, total item count, and available free space for the current filesystem
-**Plans**: 3 plans
+**Plans**: 5 plans
 Plans:
-- [ ] 01-01-PLAN.md — uv scaffold + ProbeFS FAL
-- [ ] 01-02-PLAN.md — FileManagerCore navigation state machine (TDD)
-- [ ] 01-03-PLAN.md — Three-pane Textual UI with async navigation
+- [ ] 06-01-PLAN.md — ProbeFS FAL extensions: read_text() and disk_usage()
+- [ ] 06-02-PLAN.md — StatusBar widget with reactive path/count/space attributes
+- [ ] 06-03-PLAN.md — PreviewPane: two-mode implementation (file preview + directory listing)
+- [ ] 06-04-PLAN.md — Layout wiring: MainScreen compose, TCSS refactor, app.py Footer bindings
+- [ ] 06-05-PLAN.md — Human verification: preview pane, status bar, and footer
 
 ### Phase 7: Distribution
 **Goal**: Users can install probefs via pip/pipx or Homebrew and get a working application with no additional setup
@@ -140,5 +142,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 3. Theme System | 0/TBD | Not started | - |
 | 4. Keybinding System and Config Infrastructure | 0/TBD | Not started | - |
 | 5. File Operations and Safety | 0/4 | Not started | - |
-| 6. Preview Pane and Status Bar | 0/TBD | Not started | - |
+| 6. Preview Pane and Status Bar | 0/5 | Not started | - |
 | 7. Distribution | 0/TBD | Not started | - |
