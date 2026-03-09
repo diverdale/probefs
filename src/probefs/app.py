@@ -20,28 +20,30 @@ class ProbeFSApp(App):
     SCREENS = {"main": MainScreen}
 
     BINDINGS = [
+        # Navigation — show=True: these appear in Footer key hints
         Binding("j", "screen.cursor_down", "Down",
-                priority=True, show=False, id="probefs.cursor_down"),
+                priority=True, show=True, id="probefs.cursor_down"),
         Binding("down", "screen.cursor_down", "Down",
-                priority=True, show=False, id="probefs.cursor_down_arrow"),
+                priority=True, show=False, id="probefs.cursor_down_arrow"),  # duplicate of j
         Binding("k", "screen.cursor_up", "Up",
-                priority=True, show=False, id="probefs.cursor_up"),
+                priority=True, show=True, id="probefs.cursor_up"),
         Binding("up", "screen.cursor_up", "Up",
-                priority=True, show=False, id="probefs.cursor_up_arrow"),
-        Binding("l", "screen.enter_dir", "Enter dir",
-                priority=True, show=False, id="probefs.enter_dir"),
-        Binding("enter", "screen.enter_dir", "Enter dir",
-                priority=True, show=False, id="probefs.enter_dir_enter"),
-        Binding("h", "screen.leave_dir", "Leave dir",
-                priority=True, show=False, id="probefs.leave_dir"),
-        Binding("backspace", "screen.leave_dir", "Leave dir",
-                priority=True, show=False, id="probefs.leave_dir_backspace"),
-        Binding(".", "screen.toggle_hidden", "Toggle hidden",
-                priority=True, show=False, id="probefs.toggle_hidden"),
+                priority=True, show=False, id="probefs.cursor_up_arrow"),  # duplicate of k
+        Binding("l", "screen.enter_dir", "Open",
+                priority=True, show=True, id="probefs.enter_dir"),
+        Binding("enter", "screen.enter_dir", "Open",
+                priority=True, show=False, id="probefs.enter_dir_enter"),  # duplicate of l
+        Binding("h", "screen.leave_dir", "Back",
+                priority=True, show=True, id="probefs.leave_dir"),
+        Binding("backspace", "screen.leave_dir", "Back",
+                priority=True, show=False, id="probefs.leave_dir_backspace"),  # duplicate of h
+        Binding(".", "screen.toggle_hidden", "Hidden",
+                priority=True, show=True, id="probefs.toggle_hidden"),
         Binding("q", "quit", "Quit",
-                priority=True, show=False, id="probefs.quit"),
+                priority=True, show=True, id="probefs.quit"),
         Binding("ctrl+c", "quit", "Quit",
-                priority=True, show=False, id="probefs.quit_ctrl_c"),
+                priority=True, show=False, id="probefs.quit_ctrl_c"),  # duplicate of q
+        # File operations — keep show=False (too many to show in footer)
         Binding("y", "screen.copy", "Copy",
                 priority=True, show=False, id="probefs.copy"),
         Binding("p", "screen.move", "Move",
