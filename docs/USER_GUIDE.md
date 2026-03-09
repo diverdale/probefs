@@ -160,6 +160,17 @@ Binary file — preview unavailable
 
 No attempt is made to decode or display binary content.
 
+### PDF files
+
+PDF files are previewed as extracted text (up to 20 pages) using `pdftotext` from [poppler](https://poppler.freedesktop.org/). Poppler is an optional system dependency — if it is not installed, the preview pane shows an install hint:
+
+```
+pdftotext not found — install poppler to enable PDF preview
+  macOS:  brew install poppler
+  Ubuntu: sudo apt install poppler-utils
+  Fedora: sudo dnf install poppler-utils
+```
+
 ### Directories
 
 When the cursor is on a directory, the right pane shows a simple listing of that directory's contents. This lets you see what is inside a directory before entering it.

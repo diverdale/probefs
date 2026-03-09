@@ -40,6 +40,7 @@ Navigate your filesystem at the speed of thought — no mouse required.
 - **Three-pane miller columns** — parent context, active directory, and live preview side-by-side
 - **Vim-style navigation** — `j`/`k` to move, `l` to enter, `h` to go up
 - **Syntax-highlighted previews** — powered by Pygments, auto-detected from file extension
+- **PDF previews** — extracted text preview via poppler (`pdftotext`), if installed
 - **Directory previews** — right pane lists directory contents when a folder is selected
 - **Full file operations** — copy, move, rename, delete, new file, new directory
 - **Safe deletes** — `d` sends to OS Trash, never permanent deletion
@@ -56,6 +57,7 @@ Navigate your filesystem at the speed of thought — no mouse required.
 
 - Python >= 3.10
 - Any modern terminal (kitty, iTerm2, Ghostty, Windows Terminal, GNOME Terminal, etc.)
+- **Optional:** [poppler](https://poppler.freedesktop.org/) for PDF previews (`brew install poppler` / `apt install poppler-utils`)
 
 ---
 
