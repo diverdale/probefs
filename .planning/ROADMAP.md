@@ -12,7 +12,7 @@ probefs is built in seven phases that follow a strict dependency order dictated 
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Core Scaffold and Async Architecture** - Three-pane layout with FAL and async worker pattern for all I/O
+- [x] **Phase 1: Core Scaffold and Async Architecture** - Three-pane layout with FAL and async worker pattern for all I/O (completed 2026-03-09)
 - [ ] **Phase 2: Directory Rendering and Icon System** - File metadata columns, type coloring, icon themes, symlinks, hidden file toggle
 - [ ] **Phase 3: Theme System** - YAML theme loading, built-in themes, runtime theme switching
 - [ ] **Phase 4: Keybinding System and Config Infrastructure** - User YAML keybinding overrides and stable action IDs
@@ -134,7 +134,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Core Scaffold and Async Architecture | 0/TBD | Not started | - |
+| 1. Core Scaffold and Async Architecture | 0/TBD | Complete    | 2026-03-09 |
 | 2. Directory Rendering and Icon System | 0/TBD | Not started | - |
 | 3. Theme System | 0/TBD | Not started | - |
 | 4. Keybinding System and Config Infrastructure | 0/TBD | Not started | - |
