@@ -4,7 +4,7 @@ from __future__ import annotations
 from textual.app import App, InvalidThemeError
 from textual.binding import Binding
 
-from probefs.config import load_config, themes_dir
+from probefs.config import init_config_dir, load_config, themes_dir
 from probefs.screens.main import MainScreen
 from probefs.theme.builtin import load_all_builtin_themes
 from probefs.theme.loader import ThemeLoader, ThemeValidationError
@@ -62,6 +62,7 @@ class ProbeFSApp(App):
 
     def __init__(self) -> None:
         super().__init__()
+        init_config_dir()
         config = load_config()
         self._setup_themes(config)
         self._setup_keybindings(config)
