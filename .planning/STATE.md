@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 ## Current Position
 
 Phase: 6 of 7 — IN PROGRESS
-Plan: 1 of 5 in current phase (06-01 complete)
-Status: Phase 6 in progress — 06-01 FAL methods (read_text, disk_usage) complete
-Last activity: 2026-03-09 — Completed 06-01 (ProbeFS read_text and disk_usage FAL methods)
+Plan: 2 of 5 in current phase (06-02 complete)
+Status: Phase 6 in progress — 06-02 StatusBar widget complete
+Last activity: 2026-03-09 — Completed 06-02 (StatusBar widget with reactive path/item_count/free_space)
 
 Progress: [████████████] 88%
 
@@ -45,6 +45,7 @@ Progress: [████████████] 88%
 | Phase 05-file-operations-and-safety P02 | 1 | 1 tasks | 1 files |
 | Phase 05 P04 | 10 | 1 tasks | 3 files |
 | Phase 06-preview-pane-and-status-bar P01 | 2 | 2 tasks | 1 files |
+| Phase 06-preview-pane-and-status-bar P02 | 1 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -111,6 +112,7 @@ Recent decisions affecting current work:
 - [06-01]: MAX_PREVIEW_BYTES defined at module level (not inside class) — required for use as a default argument in read_text() method signature
 - [06-01]: read_text() uses stdlib open() internally, not fsspec.open() — FAL boundary applies to callers (widgets), not ProbeFS internals; consistent with copy/move using shutil internally
 - [06-01]: Binary detection in read_text(): MIME type check first (fast, no I/O), then null-byte check in first 8 KB for extensionless binaries
+- [Phase 06]: No dock: bottom in StatusBar DEFAULT_CSS — dock set externally by probefs.tcss for independent testability
 
 ### Pending Todos
 
@@ -123,5 +125,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: Completed 06-01-PLAN.md (ProbeFS FAL methods: read_text and disk_usage)
+Stopped at: Completed 06-02-PLAN.md (StatusBar widget with reactive path/item_count/free_space)
 Resume file: None
