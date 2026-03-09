@@ -62,10 +62,40 @@ class PreviewPane(Widget):
         # any worker can run, and is never reassigned after that.
         fs = self.screen.core.fs  # type: ignore[attr-defined]
 
+        import pathlib
+
+        suffix = pathlib.Path(path).suffix.lower()
+        suffixes = [s.lower() for s in pathlib.Path(path).suffixes]
+
+        # Archive preview — intercept before read_text() which rejects binary MIME types.
+        # Covers .zip, .tar, .tgz, .tbz2, .txz, .tar.gz, .tar.bz2, .tar.xz
+        _is_archive = (
+            suffix in {".zip", ".tar", ".tgz", ".tbz2", ".txz"}
+            or (len(suffixes) >= 2 and suffixes[-2] == ".tar" and suffix in {".gz", ".bz2", ".xz"})
+        )
+        if _is_archive:
+            try:
+                text = fs.read_archive_listing(path)
+            except ValueError as exc:
+                # Not a recognized archive — fall through to text preview below
+                pass
+            except OSError as exc:
+                if worker.is_cancelled:
+                    return
+                self.app.call_from_thread(
+                    self._show_file_content, f"[dim]Cannot read archive: {exc}[/dim]", is_markup=True
+                )
+                return
+            else:
+                if worker.is_cancelled:
+                    return
+                syntax = Syntax(text, lexer="text", theme="ansi_dark", line_numbers=False)
+                self.app.call_from_thread(self._show_syntax, syntax, False)
+                return
+
         # PDF preview via pdftotext (poppler) — intercept before read_text()
         # which would reject PDFs as binary.
-        import pathlib
-        if pathlib.Path(path).suffix.lower() == ".pdf":
+        if suffix == ".pdf":
             try:
                 text = fs.read_pdf_text(path)
             except RuntimeError as exc:

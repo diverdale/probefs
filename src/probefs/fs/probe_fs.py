@@ -202,6 +202,57 @@ class ProbeFS:
             raise OSError(result.stderr.strip() or "pdftotext failed")
         return result.stdout
 
+    def read_archive_listing(self, path: str) -> str:
+        """List contents of a ZIP or tar archive for preview.
+
+        Uses Python stdlib only — no external dependencies.
+        Supports: .zip, .tar, .tar.gz/.tgz, .tar.bz2/.tbz2, .tar.xz/.txz
+
+        Returns a formatted text string with entry sizes and paths.
+        Raises ValueError if the file is not a recognized archive format.
+        Raises OSError for read errors or corrupt archives.
+
+        FAL boundary — widgets must call this, never zipfile/tarfile directly.
+        Always call from a thread worker — large tars can be slow to enumerate.
+        """
+        import zipfile
+        import tarfile
+
+        if zipfile.is_zipfile(path):
+            try:
+                with zipfile.ZipFile(path, "r") as zf:
+                    infos = zf.infolist()
+                    total = sum(i.file_size for i in infos)
+                    lines = [
+                        f"ZIP archive — {len(infos)} entries"
+                        f"  ({_fmt_size(total)} uncompressed)\n"
+                    ]
+                    for info in sorted(infos, key=lambda i: i.filename):
+                        if info.is_dir():
+                            lines.append(f"       dir  {info.filename}")
+                        else:
+                            lines.append(f"  {_fmt_size(info.file_size):>7}  {info.filename}")
+                    return "\n".join(lines)
+            except zipfile.BadZipFile as exc:
+                raise OSError(f"Bad ZIP: {exc}") from exc
+
+        try:
+            with tarfile.open(path, "r:*") as tf:
+                members = tf.getmembers()
+                total = sum(m.size for m in members if m.isfile())
+                lines = [
+                    f"TAR archive — {len(members)} entries"
+                    f"  ({_fmt_size(total)} uncompressed)\n"
+                ]
+                for m in sorted(members, key=lambda m: m.name):
+                    if m.isdir():
+                        lines.append(f"       dir  {m.name}/")
+                    else:
+                        lines.append(f"  {_fmt_size(m.size):>7}  {m.name}")
+                return "\n".join(lines)
+        except tarfile.TarError as exc:
+            raise ValueError(f"Not a recognized archive: {exc}") from exc
+
     def disk_usage(self, path: str) -> int:
         """Return free disk space in bytes for the filesystem containing path.
 
@@ -215,3 +266,15 @@ class ProbeFS:
         """
         usage = shutil.disk_usage(path)
         return usage.free
+
+
+def _fmt_size(n: int) -> str:
+    """Format a byte count as a compact human-readable string."""
+    if n < 1024:
+        return f"{n} B"
+    elif n < 1024 ** 2:
+        return f"{n / 1024:.1f} K"
+    elif n < 1024 ** 3:
+        return f"{n / 1024 ** 2:.1f} M"
+    else:
+        return f"{n / 1024 ** 3:.1f} G"
