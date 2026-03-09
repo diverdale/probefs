@@ -14,8 +14,9 @@ A comprehensive reference for probefs — a keyboard-driven TUI file browser bui
 6. [File Operations](#file-operations)
 7. [Configuration](#configuration)
 8. [Themes](#themes)
-9. [Keybinding Customization](#keybinding-customization)
-10. [Tips and Tricks](#tips-and-tricks)
+9. [Icons](#icons)
+10. [Keybinding Customization](#keybinding-customization)
+11. [Tips and Tricks](#tips-and-tricks)
 
 ---
 
@@ -235,6 +236,9 @@ theme: probefs-dark
 # If set, this overrides the `theme` setting above.
 theme_file: ~/my-theme.yaml
 
+# Icon set. Options: ascii (default, works everywhere) | nerd (requires Nerd Fonts)
+icons: ascii
+
 # Keybinding overrides. Keys are action IDs; values are key strings.
 # An override replaces all default keys for that action.
 # Separate multiple keys with commas.
@@ -249,6 +253,7 @@ keybindings:
 |---|---|---|---|
 | `theme` | string | `probefs-dark` | Name of a built-in theme |
 | `theme_file` | path | _(none)_ | Path to a custom theme YAML; overrides `theme` |
+| `icons` | string | `ascii` | Icon set: `ascii` or `nerd` |
 | `keybindings` | map | _(see below)_ | Action ID to key string overrides |
 
 ---
@@ -310,6 +315,53 @@ version:     "1.0.0"
 ```
 
 Only `name` and `primary` are required. All other color fields are optional; unspecified fields fall back to the base theme's defaults.
+
+---
+
+## Icons
+
+probefs ships two icon sets. The default works in any terminal; the Nerd Fonts set adds file-type glyphs.
+
+### Choosing an icon set
+
+Set the `icons` key in `~/.probefs/probefs.yaml`:
+
+```yaml
+icons: nerd    # or: ascii (default)
+```
+
+| Value | Description |
+|-------|-------------|
+| `ascii` | Plain ASCII symbols — works in every terminal, including SSH sessions |
+| `nerd` | Unicode glyphs from [Nerd Fonts](https://www.nerdfonts.com/) |
+
+### ASCII icons (default)
+
+| Category | Symbol |
+|----------|--------|
+| Directory | `/` |
+| File | ` ` |
+| Executable | `*` |
+| Symlink | `@` |
+| Broken symlink | `!` |
+| Archive | `#` |
+| Image | `%` |
+
+### Nerd Fonts icons
+
+Requires a [Nerd Fonts patched font](https://www.nerdfonts.com/font-downloads) installed and active in your terminal.
+
+| Category | Glyph | Nerd Fonts name |
+|----------|-------|-----------------|
+| Directory | `\uf07b` | nf-fa-folder |
+| File | `\uf15b` | nf-fa-file |
+| Executable | `\uf013` | nf-fa-cog |
+| Symlink | `\uf0c1` | nf-fa-link |
+| Broken symlink | `\uf127` | nf-fa-chain_broken |
+| Archive | `\uf1c6` | nf-fa-file_zip_o |
+| Image | `\uf1c5` | nf-fa-file_image_o |
+
+> **Note:** Auto-detection of Nerd Fonts is not possible, especially over SSH. Explicit opt-in via config is required.
 
 ---
 

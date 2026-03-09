@@ -44,6 +44,7 @@ Navigate your filesystem at the speed of thought — no mouse required.
 - **Full file operations** — copy, move, rename, delete, new file, new directory
 - **Safe deletes** — `d` sends to OS Trash, never permanent deletion
 - **Toggle hidden files** — `.` key shows/hides dotfiles instantly
+- **Nerd Fonts icons** — optional glyph icons with `icons: nerd` in config (falls back to ASCII)
 - **Configurable themes** — three built-ins plus a full custom theme YAML schema
 - **Rebindable keys** — override any action's keybinding in your config file
 - **Status bar** — always shows current path, item count, and free disk space
@@ -122,6 +123,8 @@ probefs reads `~/.probefs/probefs.yaml` on startup. The file is optional — all
 theme: probefs-dark          # built-in theme name
 theme_file: ~/mytheme.yaml   # path to a custom theme YAML (overrides theme:)
 
+icons: nerd                  # nerd (requires Nerd Fonts) | ascii (default)
+
 keybindings:
   probefs.cursor_down: "j"   # override a default key
 ```
@@ -181,6 +184,23 @@ version:     "1.0.0"
 ```
 
 Only `name` and `primary` are required. All other color fields are optional and fall back to theme defaults.
+
+---
+
+## Icons
+
+By default probefs uses plain ASCII symbols that work in any terminal. If your terminal uses a [Nerd Fonts](https://www.nerdfonts.com/) patched font, enable glyph icons:
+
+```yaml
+icons: nerd
+```
+
+| Setting | Icons used |
+|---------|------------|
+| `ascii` (default) | `/` dirs, space files — works everywhere including SSH |
+| `nerd` | Unicode glyphs from Nerd Fonts (requires patched font) |
+
+> Auto-detection is not possible over SSH, so Nerd Fonts must be explicitly enabled.
 
 ---
 

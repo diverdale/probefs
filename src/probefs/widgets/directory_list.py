@@ -16,6 +16,7 @@ from textual.message import Message
 from textual.widget import Widget
 from textual.widgets import DataTable
 
+from probefs.config import load_config
 from probefs.icons.base import IconSet
 from probefs.icons.factory import load_icon_set
 from probefs.rendering.columns import build_row
@@ -36,8 +37,7 @@ class DirectoryList(Widget, can_focus=True):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._entries: list[dict] = []
-        self._icon_set: IconSet = load_icon_set({})  # ASCIIIconSet default; no config yet
-        # config loading is Phase 4; factory signature is already correct for future use
+        self._icon_set: IconSet = load_icon_set(load_config())
 
     def compose(self) -> ComposeResult:
         yield DataTable(cursor_type="row", show_header=False, show_cursor=True)
