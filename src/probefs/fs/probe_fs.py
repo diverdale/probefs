@@ -7,8 +7,11 @@ This boundary is what makes the SFTP backend a drop-in replacement later.
 from __future__ import annotations
 
 import os
+import shutil
+from pathlib import PurePosixPath
 
 import fsspec
+from send2trash import send2trash as _send2trash
 
 
 class ProbeFS:
@@ -54,3 +57,85 @@ class ProbeFS:
         For SFTP backends, this would return the remote home path.
         """
         return os.path.expanduser("~")
+
+    def copy(self, src: str, dst: str) -> None:
+        """Copy file or directory tree to dst.
+
+        For files: shutil.copy2 (preserves metadata).
+        For directories: shutil.copytree (recursive, preserves metadata).
+
+        Raises FileExistsError if dst already exists as a directory (copytree
+        will raise natively). Raises OSError for permission errors.
+
+        FAL boundary: callers must never call shutil directly.
+        """
+        if self._fs.isdir(src):
+            shutil.copytree(src, dst)
+        else:
+            shutil.copy2(src, dst)
+
+    def move(self, src: str, dst: str) -> None:
+        """Move file or directory to dst.
+
+        Wraps shutil.move — handles cross-device moves and directories.
+
+        IMPORTANT: If dst is an existing directory, shutil.move silently places
+        src INSIDE dst (mv semantics). To prevent silent path changes, this method
+        raises FileExistsError when dst is an existing directory.
+
+        Raises FileExistsError if dst is an existing directory.
+        Raises OSError / shutil.Error on other failures.
+        """
+        if self._fs.isdir(dst):
+            raise FileExistsError(
+                f"Destination {dst!r} already exists as a directory. "
+                f"Provide the full destination path including the new name."
+            )
+        shutil.move(src, dst)
+
+    def rename(self, src: str, new_name: str) -> None:
+        """Rename a file or directory in-place (same parent directory).
+
+        new_name is the basename only — not a full path. The parent directory
+        is computed from src. Cross-directory rename is ProbeFS.move(), not this.
+
+        Raises FileExistsError if new_name already exists in the parent directory.
+        Raises OSError for permission errors.
+        """
+        parent = str(PurePosixPath(src).parent)
+        dst = str(PurePosixPath(parent) / new_name)
+        if self._fs.exists(dst):
+            raise FileExistsError(f"{new_name!r} already exists in {parent!r}")
+        self._fs.mv(src, dst)
+
+    def trash(self, path: str) -> None:
+        """Send file or directory to OS Trash. Never permanent deletion.
+
+        Uses send2trash — handles macOS Trash, Windows Recycle Bin, Linux
+        FreeDesktop trash spec. Never calls os.remove or shutil.rmtree.
+
+        Raises OSError on macOS/Windows if the trash operation fails.
+        Raises send2trash.TrashPermissionError (subclass of PermissionError,
+        subclass of OSError) on Linux if cross-device trash is not supported.
+        Catching OSError covers all platforms.
+        """
+        _send2trash(path)
+
+    def new_file(self, path: str) -> None:
+        """Create a new empty file at path.
+
+        Raises FileExistsError if path already exists (file or directory).
+        Raises OSError for permission errors.
+        """
+        if self._fs.exists(path):
+            raise FileExistsError(f"{path!r} already exists")
+        self._fs.touch(path, truncate=True)
+
+    def new_dir(self, path: str) -> None:
+        """Create a new directory at path.
+
+        Does NOT create intermediate parent directories (parents=False semantics).
+        Raises FileExistsError if path already exists.
+        Raises OSError for permission errors or if parent does not exist.
+        """
+        self._fs.mkdir(path, create_parents=False)
