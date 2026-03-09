@@ -72,7 +72,7 @@ class MainScreen(Screen):
             pane = self.query_one("#pane-current", DirectoryList)
         else:
             pane = self.query_one("#pane-parent", DirectoryList)
-        pane.set_entries(message.entries)
+        pane.set_entries(message.entries, show_hidden=self.core.show_hidden)
 
     def on_directory_load_failed(self, message: DirectoryLoadFailed) -> None:
         """Show error notification when directory load fails."""
@@ -120,4 +120,12 @@ class MainScreen(Screen):
     def action_leave_dir(self) -> None:
         """Ascend to the parent directory."""
         self.core.ascend()
+        self._load_panes()
+
+    def action_toggle_hidden(self) -> None:
+        """Toggle hidden dotfile visibility. '.' key binding."""
+        self.core.show_hidden = not self.core.show_hidden
+        # No disk re-read — set_entries filters from the already-loaded _entries.
+        # Re-trigger _load_panes to reload fresh (entries are already cached in
+        # memory by the OS so this is fast; no actual disk I/O bottleneck).
         self._load_panes()

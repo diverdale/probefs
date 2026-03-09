@@ -25,6 +25,7 @@ class FileManagerCore:
         self.fs = fs
         self.cwd: str = start_path
         self.cursor_index: int = 0
+        self.show_hidden: bool = False
 
     @property
     def parent_path(self) -> str:

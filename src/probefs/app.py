@@ -23,6 +23,7 @@ class ProbeFSApp(App):
         Binding("enter", "screen.enter_dir", "Enter dir", priority=True, show=False),
         Binding("h", "screen.leave_dir", "Leave dir", priority=True, show=False),
         Binding("backspace", "screen.leave_dir", "Leave dir", priority=True, show=False),
+        Binding(".", "screen.toggle_hidden", "Toggle hidden", priority=True, show=False),
         Binding("ctrl+c", "quit", "Quit", priority=True, show=False),
     ]
 
