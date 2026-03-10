@@ -15,14 +15,13 @@ c opens the connect dialog. Escape returns to the main screen.
 """
 from __future__ import annotations
 
-import shutil
 from pathlib import PurePosixPath
 
 from textual import work
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.screen import Screen
-from textual.widgets import Footer, Label
+from textual.widgets import Footer, Label, ProgressBar
 
 from probefs.config import save_sftp_host
 from probefs.core.file_manager import FileManagerCore
@@ -74,6 +73,21 @@ class SFTPScreen(Screen):
     SFTPScreen #remote-col.connected DirectoryList {
         opacity: 1.0;
     }
+    SFTPScreen #transfer-row {
+        height: 1;
+        background: $panel-darken-2;
+        padding: 0 1;
+        display: none;
+    }
+    SFTPScreen #transfer-row Label {
+        width: auto;
+        color: $text-muted;
+        margin-right: 1;
+    }
+    SFTPScreen #transfer-row ProgressBar {
+        width: 1fr;
+        height: 1;
+    }
     """
 
     BINDINGS = [
@@ -119,6 +133,9 @@ class SFTPScreen(Screen):
         with Horizontal(id="sftp-status"):
             yield Label("", id="status-local")
             yield Label("", id="status-remote")
+        with Horizontal(id="transfer-row"):
+            yield Label("", id="transfer-label")
+            yield ProgressBar(id="transfer-progress", total=100, show_eta=False)
         yield Footer()
 
     def on_mount(self) -> None:
@@ -128,6 +145,15 @@ class SFTPScreen(Screen):
         self._load_local()
         # Auto-open connect dialog after first render
         self.call_after_refresh(self.action_connect)
+
+    def on_unmount(self) -> None:
+        """Close the SFTP connection on screen teardown.
+
+        Shuts down paramiko's transport thread immediately so the app exits
+        cleanly without delay or stray escape sequences in the terminal.
+        """
+        if self._remote_core is not None:
+            self._remote_core.fs.close()
 
     # ── Directory loading workers ─────────────────────────────────────────
 
@@ -166,6 +192,13 @@ class SFTPScreen(Screen):
     def _apply_remote(self, entries: list[dict]) -> None:
         try:
             assert self._remote_core is not None
+            # fsspec SFTP may include the directory itself as an entry;
+            # filter it out so it doesn't appear as a navigable item.
+            cwd = self._remote_core.cwd
+            entries = [
+                e for e in entries
+                if e.get("name", "") not in (cwd, ".", "..")
+            ]
             pane = self.query_one("#pane-remote", DirectoryList)
             count = pane.set_entries(entries, show_hidden=self._remote_core.show_hidden,
                                      sort_mode=self._remote_core.sort_mode)
@@ -265,6 +298,40 @@ class SFTPScreen(Screen):
     ) -> None:
         event.stop()
 
+    def on_directory_list_entry_selected(
+        self, event: DirectoryList.EntrySelected
+    ) -> None:
+        """Double-click: navigate into directory on whichever pane was clicked."""
+        event.stop()
+        pane_id = event.control.id if event.control else None
+        if pane_id == "pane-local":
+            core = self._local_core
+            is_local = True
+        elif pane_id == "pane-remote":
+            core = self._remote_core
+            is_local = False
+        else:
+            return
+        if core is None:
+            return
+        entry = event.entry
+        if entry.get("type") != "directory":
+            return
+        name = entry.get("name", "")
+        if name.startswith("/"):
+            if name == core.cwd:
+                return
+            core.jump_to(name)
+        else:
+            basename = name.split("/")[-1] if "/" in name else name
+            if basename in (".", "", ".."):
+                return
+            core.descend(basename)
+        if is_local:
+            self._load_local()
+        else:
+            self._load_remote()
+
     def action_switch_pane(self) -> None:
         if not self._connected:
             return
@@ -293,8 +360,17 @@ class SFTPScreen(Screen):
         if entry is None or entry.get("type") != "directory":
             return
         name = entry.get("name", "")
-        basename = name.split("/")[-1] if "/" in name else name
-        core.descend(basename)
+        # fsspec SFTP ls() returns absolute paths; use them directly to avoid
+        # path doubling (e.g. /media/Public/Public/Public).
+        if name.startswith("/"):
+            if name == core.cwd:
+                return  # entry IS the current directory — skip
+            core.jump_to(name)
+        else:
+            basename = name.split("/")[-1] if "/" in name else name
+            if basename in (".", "", ".."):
+                return
+            core.descend(basename)
         if self._active_pane == "local":
             self._load_local()
         else:
@@ -346,29 +422,91 @@ class SFTPScreen(Screen):
                             severity="warning")
             return
 
-        self.app.notify(f"{direction.capitalize()}ing {basename}…", timeout=30)
         self._do_transfer(src_core.fs, src_path, dst_core.fs, dst_path, direction)
 
     @work(thread=True, exit_on_error=False)
     def _do_transfer(self, src_fs: ProbeFS, src_path: str,
                      dst_fs: ProbeFS, dst_path: str, direction: str) -> None:
-        """Worker: stream file between two filesystems."""
+        """Worker: stream file between two filesystems with progress reporting."""
+        basename = src_path.split("/")[-1] if "/" in src_path else src_path
+        try:
+            size = src_fs.info(src_path).get("size") or 0
+        except Exception:
+            size = 0
+
+        self.app.call_from_thread(self._start_progress, basename, size)
+
+        chunk = 1024 * 1024  # 1 MB
+        transferred = 0
+        last_pct = -1
         try:
             with src_fs.open_read(src_path) as src:
                 with dst_fs.open_write(dst_path) as dst:
-                    shutil.copyfileobj(src, dst, length=1024 * 1024)
+                    while True:
+                        buf = src.read(chunk)
+                        if not buf:
+                            break
+                        dst.write(buf)
+                        transferred += len(buf)
+                        # Throttle updates: only call into the main thread when
+                        # the displayed percentage actually changes (or every
+                        # chunk for unknown-size transfers).
+                        if size:
+                            pct = int(transferred * 100 / size)
+                            if pct != last_pct:
+                                last_pct = pct
+                                self.app.call_from_thread(
+                                    self._update_progress, transferred, size
+                                )
+                        else:
+                            self.app.call_from_thread(
+                                self._update_progress, transferred, 0
+                            )
         except Exception as exc:
+            self.app.call_from_thread(self._end_progress)
             self.app.notify(f"Transfer failed: {exc}", severity="error")
             return
-        basename = src_path.split("/")[-1] if "/" in src_path else src_path
+
+        self.app.call_from_thread(self._end_progress)
         self.app.notify(f"{direction.capitalize()}ed {basename}")
         if direction == "upload":
             self.app.call_from_thread(self._load_remote)
         else:
             self.app.call_from_thread(self._load_local)
 
+    def _start_progress(self, basename: str, size: int) -> None:
+        bar = self.query_one("#transfer-progress", ProgressBar)
+        bar.update(total=float(size) if size else None, progress=0)
+        self.query_one("#transfer-label", Label).update(basename)
+        self.query_one("#transfer-row").display = True
+
+    def _update_progress(self, transferred: int, size: int) -> None:
+        from probefs.rendering.metadata import human_size
+        bar = self.query_one("#transfer-progress", ProgressBar)
+        bar.update(progress=float(transferred))
+        if size:
+            self.query_one("#transfer-label", Label).update(
+                f"{human_size(transferred)} / {human_size(size)}"
+            )
+        else:
+            self.query_one("#transfer-label", Label).update(human_size(transferred))
+
+    def _end_progress(self) -> None:
+        self.query_one("#transfer-row").display = False
+
     # ── Exit ─────────────────────────────────────────────────────────────
 
     def action_leave(self) -> None:
-        """Return to main screen, dropping the SFTP connection."""
-        self.app.pop_screen()
+        """Confirm before dropping the SFTP connection and returning."""
+        from probefs.widgets.dialogs import ConfirmDialog
+        if self._connected:
+            self.app.push_screen(
+                ConfirmDialog("Disconnect from SFTP and return to file manager?"),
+                self._on_leave_confirmed,
+            )
+        else:
+            self.app.pop_screen()
+
+    def _on_leave_confirmed(self, result: bool | None) -> None:
+        if result:
+            self.app.pop_screen()

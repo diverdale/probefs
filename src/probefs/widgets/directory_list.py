@@ -36,6 +36,16 @@ class DirectoryList(Widget, can_focus=True):
         def control(self) -> "DirectoryList":
             return self._sender  # type: ignore[return-value]
 
+    class EntrySelected(Message):
+        """Posted on double-click or Enter — activate the entry."""
+        def __init__(self, entry: dict) -> None:
+            self.entry = entry
+            super().__init__()
+
+        @property
+        def control(self) -> "DirectoryList":
+            return self._sender  # type: ignore[return-value]
+
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._all_entries: list[dict] = []    # raw from fs.ls — never filtered
@@ -128,6 +138,13 @@ class DirectoryList(Widget, can_focus=True):
         idx = event.cursor_row
         if 0 <= idx < len(self._visible_entries):
             self.post_message(self.EntryHighlighted(self._visible_entries[idx]))
+
+    def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
+        """Convert DataTable.RowSelected (double-click or Enter) to EntrySelected."""
+        event.stop()
+        idx = event.cursor_row
+        if 0 <= idx < len(self._visible_entries):
+            self.post_message(self.EntrySelected(self._visible_entries[idx]))
 
 
 # ---------------------------------------------------------------------------

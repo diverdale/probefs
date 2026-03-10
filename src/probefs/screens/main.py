@@ -57,8 +57,9 @@ class MainScreen(Screen):
 
     def on_mount(self) -> None:
         """Initialize FileManagerCore and trigger initial directory load."""
+        import os
         fs = ProbeFS()
-        self.core = FileManagerCore(fs, start_path=fs.home())
+        self.core = FileManagerCore(fs, start_path=os.getcwd())
         self._load_panes()
 
     @work(thread=True, exclusive=True, exit_on_error=False)
@@ -119,8 +120,13 @@ class MainScreen(Screen):
 
         entry = event.entry
         # Always update preview
-        preview = self.query_one("#pane-preview", PreviewPane)
-        preview.post_message(PreviewPane.CursorChanged(entry))
+        self.query_one("#pane-preview", PreviewPane).show_entry(entry)
+
+    def on_directory_list_entry_selected(
+        self, event: DirectoryList.EntrySelected
+    ) -> None:
+        """Double-click: same behaviour as Enter."""
+        self.action_enter_dir()
 
     # -- Action guard: block all screen actions while FilterBar is active --
 
@@ -149,18 +155,23 @@ class MainScreen(Screen):
         self.query_one("#pane-current", DirectoryList).move_cursor_up()
 
     def action_enter_dir(self) -> None:
-        """Descend into the highlighted directory entry."""
+        """Descend into directory, or open file with default app."""
         current_pane = self.query_one("#pane-current", DirectoryList)
         entry = current_pane.get_highlighted_entry()
         if entry is None:
             return
-        if entry.get("type") != "directory":
-            return
-        # Extract just the basename for descend()
-        name = entry.get("name", "")
-        basename = name.split("/")[-1] if "/" in name else name
-        self.core.descend(basename)
-        self._load_panes()
+        if entry.get("type") == "directory":
+            name = entry.get("name", "")
+            basename = name.split("/")[-1] if "/" in name else name
+            self.core.descend(basename)
+            self._load_panes()
+        else:
+            path = entry.get("name", "")
+            if path:
+                try:
+                    self.core.fs.open_with_default(path)
+                except OSError as exc:
+                    self.notify(f"Cannot open: {exc}", severity="error")
 
     def action_leave_dir(self) -> None:
         """Ascend to the parent directory."""

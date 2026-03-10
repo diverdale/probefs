@@ -163,11 +163,10 @@ class ProbeFSApp(App):
         """Push main screen on launch. If --sftp was given, also push SFTPScreen."""
         self.push_screen("main")
         if self._sftp_host:
+            import os
             from probefs.screens.sftp import SFTPScreen
-            from probefs.fs.probe_fs import ProbeFS
-            local_fs = ProbeFS()
             self.push_screen(SFTPScreen(
-                local_cwd=local_fs.home(),
+                local_cwd=os.getcwd(),
                 connect_to=self._sftp_host,
             ))
 

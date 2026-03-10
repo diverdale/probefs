@@ -15,12 +15,10 @@ from __future__ import annotations
 
 from textual import work
 from textual.app import ComposeResult
-from textual.message import Message
 from textual.widget import Widget
 from textual.widgets import ContentSwitcher, Static
 from textual.worker import get_current_worker
 
-from probefs.widgets.directory_list import DirectoryList
 
 # Truncation notice appended when file exceeds MAX_PREVIEW_BYTES
 _TRUNCATION_NOTICE = "\n\n[dim]--- preview truncated at 512 KB ---[/dim]"
@@ -29,27 +27,60 @@ _TRUNCATION_NOTICE = "\n\n[dim]--- preview truncated at 512 KB ---[/dim]"
 class PreviewPane(Widget):
     """Right pane: shows syntax-highlighted file preview or directory listing."""
 
-    class CursorChanged(Message):
-        """Posted by MainScreen when the cursor moves to a new entry."""
-        def __init__(self, entry: dict) -> None:
-            self.entry = entry
-            super().__init__()
-
     def compose(self) -> ComposeResult:
         with ContentSwitcher(initial="preview-file"):
             yield Static("", id="preview-file", markup=True)
-            yield DirectoryList(id="preview-dir")
 
     def show_entry(self, entry: dict) -> None:
         """Dispatch preview update based on entry type. Called from CursorChanged handler."""
         entry_type = entry.get("type", "unknown")
         path = entry.get("name", "")
         if entry_type == "directory":
-            self._load_dir_preview(path)
+            self._show_dir_preview_sync(path)
         else:
             self._load_file_preview(path)
 
-    @work(thread=True, exclusive=True, exit_on_error=False)
+    def _show_dir_preview_sync(self, path: str) -> None:
+        """Show directory listing in the Static preview widget."""
+        from probefs.rendering.metadata import human_size, format_mtime
+        fs = self.screen.core.fs  # type: ignore[attr-defined]
+        show_hidden = self.screen.core.show_hidden  # type: ignore[attr-defined]
+        try:
+            entries = fs.ls(path, detail=True)
+        except Exception as exc:
+            self._show_file_content(f"[dim]Cannot read directory: {exc}[/dim]", is_markup=True)
+            return
+
+        from rich.text import Text
+        from rich.console import Group
+
+        lines = []
+        dirs  = [e for e in entries if e.get("type") == "directory"]
+        files = [e for e in entries if e.get("type") != "directory"]
+        for entry in sorted(dirs, key=lambda e: (e.get("name") or "").lower()) + \
+                     sorted(files, key=lambda e: (e.get("name") or "").lower()):
+            name = entry.get("name", "")
+            basename = name.split("/")[-1] if "/" in name else name
+            if not show_hidden and basename.startswith("."):
+                continue
+            is_dir = entry.get("type") == "directory"
+            size_str = "     -" if is_dir else f"{human_size(entry.get('size', 0)):>6}"
+            color = "bold blue" if is_dir else "default"
+            suffix = "/" if is_dir else ""
+            line = Text()
+            line.append(f"{size_str}  ", style="cyan")
+            line.append(f"{basename}{suffix}", style=color)
+            lines.append(line)
+
+        if not lines:
+            self._show_file_content("[dim](empty directory)[/dim]", is_markup=True)
+            return
+
+        switcher = self.query_one(ContentSwitcher)
+        switcher.current = "preview-file"
+        self.query_one("#preview-file", Static).update(Group(*lines))
+
+    @work(thread=True, exclusive=True, group="preview_load", exit_on_error=False)
     def _load_file_preview(self, path: str) -> None:
         """Worker: read file via ProbeFS.read_text(), build Rich Syntax, switch to file mode."""
         from rich.syntax import Syntax
@@ -186,31 +217,4 @@ class PreviewPane(Widget):
         switcher.current = "preview-file"
         self.query_one("#preview-file", Static).update(markup_text)
 
-    @work(thread=True, exclusive=True, exit_on_error=False)
-    def _load_dir_preview(self, path: str) -> None:
-        """Worker: list directory contents, post to preview-dir DirectoryList."""
-        worker = get_current_worker()
-        fs = self.screen.core.fs  # type: ignore[attr-defined]
-        try:
-            entries = fs.ls(path, detail=True)
-        except (OSError, PermissionError) as exc:
-            if worker.is_cancelled:
-                return
-            self.app.call_from_thread(self._show_file_content, f"[dim]Cannot read directory: {exc}[/dim]", is_markup=True)
-            return
 
-        if worker.is_cancelled:
-            return
-
-        self.app.call_from_thread(self._show_dir_entries, entries, self.screen.core.show_hidden)
-
-    def _show_dir_entries(self, entries: list[dict], show_hidden: bool) -> None:
-        """Main-thread: switch to directory mode, populate DirectoryList."""
-        switcher = self.query_one(ContentSwitcher)
-        switcher.current = "preview-dir"
-        dir_list = self.query_one("#preview-dir", DirectoryList)
-        dir_list.set_entries(entries, show_hidden=show_hidden)
-
-    def on_preview_pane_cursor_changed(self, event: CursorChanged) -> None:
-        """Handle cursor change — dispatch to correct worker based on entry type."""
-        self.show_entry(event.entry)

@@ -480,9 +480,10 @@ class ConnectDialog(ModalScreen):
                 key_path = str(profile.get("key_path", ""))
                 if key_path:
                     self.query_one("#auth-select", Select).value = "key"
-                    inp = self.query_one("#secret-input", Input)
-                    inp.password = False
-                    inp.value = key_path
+                    # Setting auth-select posts a Select.Changed that clears
+                    # secret-input (inp.value = ""). Schedule key path restore
+                    # via call_after_refresh so it runs after that event fires.
+                    self.call_after_refresh(self._restore_key_path, key_path)
         elif event.select.id == "auth-select":
             inp = self.query_one("#secret-input", Input)
             inp.password = (event.value == "password")
@@ -493,3 +494,9 @@ class ConnectDialog(ModalScreen):
             self.query_one("#secret-label", Label).update(
                 "Password" if event.value == "password" else "Key path"
             )
+
+    def _restore_key_path(self, key_path: str) -> None:
+        """Set the key path after auth-select's Changed event has cleared the field."""
+        inp = self.query_one("#secret-input", Input)
+        inp.password = False
+        inp.value = key_path

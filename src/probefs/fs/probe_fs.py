@@ -290,6 +290,20 @@ class ProbeFS:
         """
         return self._fs.open(path, "wb")
 
+    def close(self) -> None:
+        """Close the underlying filesystem connection if supported.
+
+        For SFTP: shuts down the paramiko transport thread immediately, which
+        prevents the slow exit and stray terminal characters when the app quits.
+        No-op for local filesystems (LocalFileSystem has no close()).
+        """
+        close_fn = getattr(self._fs, "close", None)
+        if callable(close_fn):
+            try:
+                close_fn()
+            except Exception:
+                pass
+
     def read_archive_listing(self, path: str) -> str:
         """List contents of a ZIP or tar archive for preview.
 
