@@ -7,6 +7,11 @@ ContentSwitcher toggles between the two modes without mounting/unmounting.
 File reads happen in a @work(thread=True, exclusive=True) worker — exclusive=True
 cancels in-flight loads when the cursor moves quickly (race-condition safe).
 
+Race-condition guard: _preview_gen is incremented on every show_entry() call.
+Workers capture the generation at start and discard results if the generation
+has advanced (i.e. the user moved the cursor again before the worker finished).
+This prevents a stale file-preview worker from overwriting a directory listing.
+
 Message routing: MainScreen posts PreviewPane.CursorChanged(entry) to this widget.
 The handler calls show_entry() which dispatches to the correct worker based on type.
 This is identical to the Phase 1 interface — MainScreen.py requires no changes.
@@ -27,18 +32,23 @@ _TRUNCATION_NOTICE = "\n\n[dim]--- preview truncated at 512 KB ---[/dim]"
 class PreviewPane(Widget):
     """Right pane: shows syntax-highlighted file preview or directory listing."""
 
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._preview_gen: int = 0
+
     def compose(self) -> ComposeResult:
         with ContentSwitcher(initial="preview-file"):
             yield Static("", id="preview-file", markup=True)
 
     def show_entry(self, entry: dict) -> None:
         """Dispatch preview update based on entry type. Called from CursorChanged handler."""
+        self._preview_gen += 1
         entry_type = entry.get("type", "unknown")
         path = entry.get("name", "")
         if entry_type == "directory":
             self._show_dir_preview_sync(path)
         else:
-            self._load_file_preview(path)
+            self._load_file_preview(path, self._preview_gen)
 
     def _show_dir_preview_sync(self, path: str) -> None:
         """Show directory listing in the Static preview widget."""
@@ -81,7 +91,7 @@ class PreviewPane(Widget):
         self.query_one("#preview-file", Static).update(Group(*lines))
 
     @work(thread=True, exclusive=True, group="preview_load", exit_on_error=False)
-    def _load_file_preview(self, path: str) -> None:
+    def _load_file_preview(self, path: str, gen: int) -> None:
         """Worker: read file via ProbeFS.read_text(), build Rich Syntax, switch to file mode."""
         from rich.syntax import Syntax
         from probefs.fs.probe_fs import MAX_PREVIEW_BYTES
@@ -113,15 +123,18 @@ class PreviewPane(Widget):
             except OSError as exc:
                 if worker.is_cancelled:
                     return
+                msg = f"[dim]Cannot read archive: {exc}[/dim]"
                 self.app.call_from_thread(
-                    self._show_file_content, f"[dim]Cannot read archive: {exc}[/dim]", is_markup=True
+                    lambda m=msg: self._show_file_content(m, is_markup=True) if gen == self._preview_gen else None
                 )
                 return
             else:
                 if worker.is_cancelled:
                     return
                 syntax = Syntax(text, lexer="text", theme="ansi_dark", line_numbers=False)
-                self.app.call_from_thread(self._show_syntax, syntax, False)
+                self.app.call_from_thread(
+                    lambda s=syntax: self._show_syntax(s, False) if gen == self._preview_gen else None
+                )
                 return
 
         # PDF preview via pdftotext (poppler) — intercept before read_text()
@@ -132,18 +145,26 @@ class PreviewPane(Widget):
             except RuntimeError as exc:
                 if worker.is_cancelled:
                     return
-                self.app.call_from_thread(self._show_file_content, f"[dim]{exc}[/dim]", is_markup=False)
+                msg = f"[dim]{exc}[/dim]"
+                self.app.call_from_thread(
+                    lambda m=msg: self._show_file_content(m, is_markup=False) if gen == self._preview_gen else None
+                )
                 return
             except OSError as exc:
                 if worker.is_cancelled:
                     return
-                self.app.call_from_thread(self._show_file_content, f"[dim]Cannot read PDF: {exc}[/dim]", is_markup=True)
+                msg = f"[dim]Cannot read PDF: {exc}[/dim]"
+                self.app.call_from_thread(
+                    lambda m=msg: self._show_file_content(m, is_markup=True) if gen == self._preview_gen else None
+                )
                 return
             if worker.is_cancelled:
                 return
             from rich.syntax import Syntax
             syntax = Syntax(text, lexer="text", theme="ansi_dark", line_numbers=True)
-            self.app.call_from_thread(self._show_syntax, syntax, False)
+            self.app.call_from_thread(
+                lambda s=syntax: self._show_syntax(s, False) if gen == self._preview_gen else None
+            )
             return
 
         truncated = False
@@ -153,12 +174,18 @@ class PreviewPane(Widget):
             # Binary file detected — show informative message
             if worker.is_cancelled:
                 return
-            self.app.call_from_thread(self._show_file_content, f"[dim]{exc}[/dim]", is_markup=True)
+            msg = f"[dim]{exc}[/dim]"
+            self.app.call_from_thread(
+                lambda m=msg: self._show_file_content(m, is_markup=True) if gen == self._preview_gen else None
+            )
             return
         except (OSError, PermissionError) as exc:
             if worker.is_cancelled:
                 return
-            self.app.call_from_thread(self._show_file_content, f"[dim]Cannot read: {exc}[/dim]", is_markup=True)
+            msg = f"[dim]Cannot read: {exc}[/dim]"
+            self.app.call_from_thread(
+                lambda m=msg: self._show_file_content(m, is_markup=True) if gen == self._preview_gen else None
+            )
             return
 
         # Check if content was capped (file larger than max_bytes)
@@ -195,7 +222,10 @@ class PreviewPane(Widget):
         if worker.is_cancelled:
             return
 
-        self.app.call_from_thread(self._show_syntax, syntax, truncated)
+        t = truncated
+        self.app.call_from_thread(
+            lambda s=syntax, tr=t: self._show_syntax(s, tr) if gen == self._preview_gen else None
+        )
 
     def _show_syntax(self, syntax: object, truncated: bool) -> None:
         """Main-thread: switch to file mode, update Static with Rich Syntax renderable."""
