@@ -30,10 +30,17 @@ class ConnectionBar(Widget):
         border-bottom: solid $primary;
         padding: 0 1;
     }
+    ConnectionBar ContentSwitcher {
+        height: auto;
+    }
+    ConnectionBar Vertical {
+        height: auto;
+    }
     ConnectionBar Horizontal {
         height: auto;
         width: 100%;
         align: left middle;
+        padding: 0 0 0 0;
     }
     ConnectionBar Label.field-label {
         width: auto;
@@ -52,10 +59,14 @@ class ConnectionBar(Widget):
         width: 6;
     }
     ConnectionBar Select {
-        height: 1;
         width: 18;
+        height: 1;
         margin: 0 1 0 0;
-        border: none;
+    }
+    ConnectionBar Select SelectCurrent {
+        border: none !important;
+        padding: 0 1;
+        height: 1;
     }
     ConnectionBar Button {
         height: 1;

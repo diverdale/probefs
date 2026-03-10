@@ -12,6 +12,7 @@ dependencies = [
     "fsspec",
     "ruamel-yaml>=0.19.1",
     "send2trash>=2.1.0",
+    "paramiko>=4.0.0",
 ]
 
 [project.scripts]

@@ -466,6 +466,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "fsspec" },
+    { name = "paramiko" },
     { name = "ruamel-yaml" },
     { name = "send2trash" },
     { name = "textual" },
@@ -486,6 +487,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "fsspec" },
+    { name = "paramiko", specifier = ">=4.0.0" },
     { name = "paramiko", marker = "extra == 'sftp'", specifier = ">=3.0" },
     { name = "ruamel-yaml", specifier = ">=0.19.1" },
     { name = "send2trash", specifier = ">=2.1.0" },
