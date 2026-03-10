@@ -42,6 +42,7 @@ _HELP_TEXT = """\
 [bold $accent]App[/]
   [bold]?[/]           Show this help
   [bold]a[/]           About probefs
+  [bold]ctrl+s[/]      Open SFTP screen
   [bold]ctrl+q[/]      Quit
   [bold]ctrl+c[/]      Quit (alternate)
 """

@@ -79,10 +79,13 @@ class ProbeFSApp(App):
                 priority=True, show=False, id="probefs.new_file"),
         Binding("ctrl+n", "screen.new_dir", "New dir",
                 priority=True, show=False, id="probefs.new_dir"),
+        Binding("ctrl+s", "screen.sftp", "SFTP",
+                priority=True, show=False, id="probefs.sftp"),
     ]
 
-    def __init__(self) -> None:
+    def __init__(self, sftp_host: str | None = None) -> None:
         super().__init__()
+        self._sftp_host = sftp_host
         init_config_dir()
         config = load_config()
         self._setup_themes(config)
@@ -157,10 +160,28 @@ class ProbeFSApp(App):
             self.set_keymap(keymap)
 
     def on_mount(self) -> None:
-        """Push main screen on launch."""
+        """Push main screen on launch. If --sftp was given, also push SFTPScreen."""
         self.push_screen("main")
+        if self._sftp_host:
+            from probefs.screens.sftp import SFTPScreen
+            from probefs.fs.probe_fs import ProbeFS
+            local_fs = ProbeFS()
+            self.push_screen(SFTPScreen(
+                local_cwd=local_fs.home(),
+                connect_to=self._sftp_host,
+            ))
 
 
 def main() -> None:
     """Entry point for `uv run probefs` and `probefs.app:main`."""
-    ProbeFSApp().run()
+    import argparse
+    parser = argparse.ArgumentParser(
+        prog="probefs",
+        description="A fast, keyboard-driven TUI file browser",
+    )
+    parser.add_argument(
+        "--sftp", metavar="HOST",
+        help="Open SFTP screen connected to HOST on launch",
+    )
+    args, _ = parser.parse_known_args()
+    ProbeFSApp(sftp_host=args.sftp).run()

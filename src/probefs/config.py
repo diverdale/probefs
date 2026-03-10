@@ -62,6 +62,48 @@ def init_config_dir() -> None:
         pass
 
 
+def sftp_hosts_path() -> Path:
+    """Return path to SFTP connection profiles: ~/.probefs/sftp_hosts.yaml"""
+    return Path.home() / ".probefs" / "sftp_hosts.yaml"
+
+
+def load_sftp_hosts() -> list[dict]:
+    """Load saved SFTP connection profiles. Returns [] on any error."""
+    path = sftp_hosts_path()
+    if not path.exists():
+        return []
+    yaml = YAML()
+    try:
+        data = yaml.load(path)
+        return data if isinstance(data, list) else []
+    except YAMLError:
+        return []
+
+
+def save_sftp_host(host: str, port: int, username: str, key_path: str = "") -> None:
+    """Save or update an SFTP connection profile. Never stores passwords.
+
+    Uses "username@host" as the profile name. Updates existing entry if
+    host+username match, otherwise appends. Silent on write errors.
+    """
+    hosts = load_sftp_hosts()
+    name = f"{username}@{host}"
+    for entry in hosts:
+        if entry.get("host") == host and entry.get("username") == username:
+            entry["port"] = port
+            entry["key_path"] = key_path
+            break
+    else:
+        hosts.append({"name": name, "host": host, "port": port,
+                      "username": username, "key_path": key_path})
+    try:
+        yaml = YAML()
+        with open(sftp_hosts_path(), "w", encoding="utf-8") as f:
+            yaml.dump(hosts, f)
+    except OSError:
+        pass
+
+
 def load_config() -> dict:
     """Load probefs.yaml and return as a plain dict.
 

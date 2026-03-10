@@ -53,12 +53,21 @@ class ProbeFS:
         return self._fs.isdir(path)
 
     def home(self) -> str:
-        """Return the user's home directory path.
+        """Return the home directory for this filesystem.
 
-        FAL boundary helper — callers (screens, widgets) must not use os/pathlib directly.
-        For SFTP backends, this would return the remote home path.
+        For local filesystems: os.path.expanduser("~").
+        For remote filesystems (SFTP etc.): attempts to resolve "~" via the
+        backend; falls back to "/" if the backend doesn't support it.
         """
-        return os.path.expanduser("~")
+        protocol = getattr(self._fs, "protocol", "file")
+        if isinstance(protocol, (list, tuple)):
+            protocol = protocol[0]
+        if protocol in ("file", "local", "abstract"):
+            return os.path.expanduser("~")
+        try:
+            return self._fs.info("~")["name"]
+        except Exception:
+            return "/"
 
     def copy(self, src: str, dst: str) -> None:
         """Copy file or directory tree to dst.
@@ -253,6 +262,22 @@ class ProbeFS:
                     "  Ubuntu/Debian: sudo apt install xclip\n"
                     "  Fedora:        sudo dnf install xclip"
                 )
+
+    def open_read(self, path: str):
+        """Return a binary file-like object for reading. Use as a context manager.
+
+        FAL boundary — callers must not call self._fs.open() directly.
+        Used for cross-filesystem streaming transfers (SFTP upload/download).
+        """
+        return self._fs.open(path, "rb")
+
+    def open_write(self, path: str):
+        """Return a binary file-like object for writing. Use as a context manager.
+
+        FAL boundary — callers must not call self._fs.open() directly.
+        Used for cross-filesystem streaming transfers (SFTP upload/download).
+        """
+        return self._fs.open(path, "wb")
 
     def read_archive_listing(self, path: str) -> str:
         """List contents of a ZIP or tar archive for preview.

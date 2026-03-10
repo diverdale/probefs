@@ -290,6 +290,11 @@ class MainScreen(Screen):
         """Show about screen. a binding."""
         self.app.push_screen(AboutDialog())
 
+    def action_sftp(self) -> None:
+        """Open SFTP screen. ctrl+s binding."""
+        from probefs.screens.sftp import SFTPScreen
+        self.app.push_screen(SFTPScreen(local_cwd=self.core.cwd))
+
     # -- File operation actions --
     # Pattern: action method collects input via modal, then fires a named @work worker.
     # Workers run in threads; all main-thread calls use call_from_thread.
