@@ -39,16 +39,25 @@ Navigate your filesystem at the speed of thought — no mouse required.
 
 - **Three-pane miller columns** — parent context, active directory, and live preview side-by-side
 - **Vim-style navigation** — `j`/`k` to move, `l` to enter, `h` to go up
+- **Navigation history** — `Ctrl+O` / `Ctrl+I` to jump back and forward; `g` to go to any path
 - **Syntax-highlighted previews** — powered by Pygments, auto-detected from file extension
+- **Archive previews** — ZIP and tar file contents listed inline, no extra deps required
 - **PDF previews** — extracted text preview via poppler (`pdftotext`), if installed
 - **Directory previews** — right pane lists directory contents when a folder is selected
+- **Sort modes** — `s` cycles name↑ → name↓ → size↓ → date↓; sort indicator in status bar
+- **Fuzzy name filter** — `/` opens a live filter bar; type to narrow, `Enter` to keep, `Esc` to clear
 - **Full file operations** — copy, move, rename, delete, new file, new directory
 - **Safe deletes** — `d` sends to OS Trash, never permanent deletion
+- **Open with default app** — `o` launches the system default application for a file
+- **Clipboard** — `Y` copies the selected item's full path to the clipboard
+- **Shell drop** — `!` drops to your `$SHELL` in the current directory; probefs resumes on exit
+- **SFTP dual-pane** — `Ctrl+S` opens a local↔remote transfer screen; connection profiles saved automatically
 - **Toggle hidden files** — `.` key shows/hides dotfiles instantly
 - **Nerd Fonts icons** — optional glyph icons with `icons: nerd` in config (falls back to ASCII)
 - **Configurable themes** — three built-ins plus a full custom theme YAML schema
 - **Rebindable keys** — override any action's keybinding in your config file
-- **Status bar** — always shows current path, item count, and free disk space
+- **Help dialog** — `?` shows the full keybinding reference at any time
+- **Status bar** — always shows current path, item count, sort mode, and free disk space
 - **Zero mouse required** — every operation reachable from the keyboard
 
 ---
@@ -98,6 +107,8 @@ That's it. probefs opens in your current directory.
 
 ## Key Bindings
 
+### Navigation
+
 | Key | Action |
 |-----|--------|
 | `j` / `↓` | Move cursor down |
@@ -107,19 +118,41 @@ That's it. probefs opens in your current directory.
 | `Ctrl+O` | Navigate back in history |
 | `Ctrl+I` | Navigate forward in history |
 | `g` | Go to path (jump anywhere) |
+
+### View
+
+| Key | Action |
+|-----|--------|
 | `.` | Toggle hidden files (dotfiles) |
-| `s` | Cycle sort mode |
-| `/` | Filter files by name |
+| `s` | Cycle sort mode (name↑ → name↓ → size↓ → date↓) |
+| `/` | Filter files by name (live; `Esc` cancel · `Enter` keep) |
+
+### File Operations
+
+| Key | Action |
+|-----|--------|
 | `y` | Copy selected item |
 | `p` | Move selected item |
-| `d` | Delete (send to Trash) |
+| `d` | Delete — sends to OS Trash (safe, reversible) |
 | `r` | Rename selected item |
 | `n` | New file in current directory |
 | `Ctrl+N` | New directory in current directory |
+
+### Clipboard & Launch
+
+| Key | Action |
+|-----|--------|
 | `Y` | Copy current path to clipboard |
-| `o` | Open with system default app |
+| `o` | Open with system default application |
 | `!` | Drop to shell in current directory |
+| `Ctrl+S` | Open SFTP screen |
+
+### App
+
+| Key | Action |
+|-----|--------|
 | `?` | Show help / keybinding reference |
+| `a` | About probefs |
 | `Ctrl+Q` / `Ctrl+C` | Quit |
 
 ---
