@@ -162,7 +162,11 @@ def _sort_entries(entries: list[dict], sort_mode: str) -> list[dict]:
         return e.get("size", 0) or 0
 
     def date_key(e: dict) -> float:
-        return e.get("mtime", 0.0) or 0.0
+        import datetime as _dt
+        m = e.get("mtime", 0.0)
+        if isinstance(m, _dt.datetime):
+            return m.timestamp()
+        return float(m) if m else 0.0
 
     if sort_mode == "name_asc":
         dirs.sort(key=name_key)

@@ -64,7 +64,7 @@ def get_category(entry: dict, fs=None) -> str:
                 return "broken_symlink"
         return "symlink"
 
-    if stat.S_ISDIR(mode):
+    if entry.get("type") == "directory" or stat.S_ISDIR(mode):
         return "directory"
 
     if bool(mode & 0o111):
@@ -105,27 +105,34 @@ def human_size(n: int | None) -> str:
 # format_mtime
 # ---------------------------------------------------------------------------
 
-def format_mtime(mtime: float | None) -> str:
-    """Format epoch timestamp as 'Nov 12 14:23' (12 chars).
+def format_mtime(mtime) -> str:
+    """Format mtime as 'Nov 12 14:23' (12 chars).
 
+    Accepts a float epoch timestamp (local fs) or a datetime object (SFTP).
     Returns 12 spaces for None — keeps column alignment when mtime is missing.
     """
     if mtime is None:
         return "            "  # 12 spaces — matches column width
-    return datetime.datetime.fromtimestamp(mtime).strftime("%b %d %H:%M")
+    if isinstance(mtime, datetime.datetime):
+        return mtime.strftime("%b %d %H:%M")
+    try:
+        return datetime.datetime.fromtimestamp(float(mtime)).strftime("%b %d %H:%M")
+    except (OSError, OverflowError, ValueError, TypeError):
+        return "            "
 
 
 # ---------------------------------------------------------------------------
 # uid_to_name
 # ---------------------------------------------------------------------------
 
-def uid_to_name(uid: int) -> str:
+def uid_to_name(uid) -> str:
     """Resolve UID to username. Falls back to str(uid) for unknown UIDs.
 
-    Handles KeyError (unknown UID) and OverflowError (negative UIDs on some
-    platforms).
+    Accepts int or None (SFTP entries may omit uid).
     """
+    if uid is None:
+        return ""
     try:
-        return pwd.getpwuid(uid).pw_name
-    except (KeyError, OverflowError):
+        return pwd.getpwuid(int(uid)).pw_name
+    except (KeyError, OverflowError, ValueError, TypeError):
         return str(uid)

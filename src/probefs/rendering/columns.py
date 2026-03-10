@@ -35,7 +35,7 @@ def build_row(
     """
     name = entry.get("name", "")
     basename = name.split("/")[-1] if "/" in name else name
-    mode = entry.get("mode", 0)
+    mode = entry.get("mode") or 0
     size = entry.get("size", 0)
     mtime = entry.get("mtime")
     uid = entry.get("uid", 0)
