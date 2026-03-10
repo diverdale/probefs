@@ -9,7 +9,7 @@ from __future__ import annotations
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.screen import ModalScreen
-from textual.widgets import Button, Input, Label, Static
+from textual.widgets import Button, Input, Label, Select, Static
 
 _HELP_TEXT = """\
 [bold $accent]Navigation[/]
@@ -305,3 +305,176 @@ class HelpDialog(ModalScreen[None]):
     def on_key(self, event) -> None:
         if event.key in ("escape", "enter", "question_mark"):
             self.dismiss(None)
+
+
+class ConnectDialog(ModalScreen):
+    """SFTP connection dialog.
+
+    Dismisses with a dict {host, port, username, auth, secret} on Connect,
+    or None if the user cancels.
+    """
+
+    DEFAULT_CSS = """
+    ConnectDialog {
+        align: center middle;
+    }
+    ConnectDialog > Vertical {
+        background: $surface;
+        padding: 1 2;
+        width: 60;
+        height: auto;
+        border: tall $primary;
+    }
+    ConnectDialog #connect-title {
+        text-align: center;
+        width: 100%;
+        margin-bottom: 1;
+        color: $accent;
+    }
+    ConnectDialog Label.field-label {
+        width: 100%;
+        color: $text-muted;
+        margin-top: 1;
+    }
+    ConnectDialog Input {
+        width: 100%;
+    }
+    ConnectDialog Select {
+        width: 100%;
+    }
+    ConnectDialog #row-port-user {
+        height: auto;
+        width: 100%;
+    }
+    ConnectDialog #port-col {
+        width: 14;
+        margin-right: 1;
+    }
+    ConnectDialog #user-col {
+        width: 1fr;
+    }
+    ConnectDialog #btn-row {
+        width: 100%;
+        height: auto;
+        align: right middle;
+        margin-top: 1;
+    }
+    ConnectDialog Button {
+        width: auto;
+        min-width: 10;
+        margin: 0 0 0 1;
+    }
+    """
+
+    def __init__(self, initial_host: str = "") -> None:
+        super().__init__()
+        self._initial_host = initial_host
+
+    def compose(self) -> ComposeResult:
+        from probefs.config import load_sftp_hosts
+        profiles = load_sftp_hosts()
+
+        with Vertical():
+            yield Label("SFTP Connect", id="connect-title")
+            yield Label("Host", classes="field-label")
+            yield Input(self._initial_host, placeholder="hostname or IP",
+                        id="host-input")
+            with Horizontal(id="row-port-user"):
+                with Vertical(id="port-col"):
+                    yield Label("Port", classes="field-label")
+                    yield Input("22", placeholder="22", id="port-input")
+                with Vertical(id="user-col"):
+                    yield Label("User", classes="field-label")
+                    yield Input("", placeholder="username", id="user-input")
+            yield Label("Auth", classes="field-label")
+            yield Select(
+                [("Password", "password"), ("SSH Key", "key")],
+                value="password",
+                id="auth-select",
+                allow_blank=False,
+            )
+            yield Label("Password", classes="field-label", id="secret-label")
+            yield Input("", password=True,
+                        placeholder="password or ~/.ssh/id_rsa",
+                        id="secret-input")
+            if profiles:
+                yield Label("Saved profiles", classes="field-label")
+                yield Select(
+                    [(p["name"], p["name"]) for p in profiles],
+                    prompt="Load a saved profile…",
+                    id="profile-select",
+                    allow_blank=True,
+                )
+            with Horizontal(id="btn-row"):
+                yield Button("Connect", variant="primary", id="connect")
+                yield Button("Cancel", variant="default", id="cancel")
+
+    def on_mount(self) -> None:
+        self.query_one("#host-input", Input).focus()
+
+    def _get_values(self) -> tuple[str, int, str, str, str]:
+        host = self.query_one("#host-input", Input).value.strip()
+        port_str = self.query_one("#port-input", Input).value.strip()
+        username = self.query_one("#user-input", Input).value.strip()
+        auth_val = self.query_one("#auth-select", Select).value
+        auth = str(auth_val) if auth_val is not Select.BLANK else "password"
+        secret = self.query_one("#secret-input", Input).value
+        try:
+            port = int(port_str)
+        except ValueError:
+            port = 22
+        return host, port, username, auth, secret
+
+    def _submit(self) -> None:
+        host, port, username, auth, secret = self._get_values()
+        if not host:
+            self.query_one("#host-input", Input).focus()
+            return
+        if not username:
+            self.query_one("#user-input", Input).focus()
+            return
+        self.dismiss({"host": host, "port": port, "username": username,
+                      "auth": auth, "secret": secret})
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "connect":
+            self._submit()
+        else:
+            self.dismiss(None)
+
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        """Enter in any field submits the form."""
+        self._submit()
+
+    def on_key(self, event) -> None:
+        if event.key == "escape":
+            self.dismiss(None)
+
+    def on_select_changed(self, event: Select.Changed) -> None:
+        event.stop()
+        if event.select.id == "profile-select" and event.value is not Select.BLANK:
+            from probefs.config import load_sftp_hosts
+            profiles = load_sftp_hosts()
+            profile = next(
+                (p for p in profiles if p.get("name") == event.value), None
+            )
+            if profile:
+                self.query_one("#host-input", Input).value = str(profile.get("host", ""))
+                self.query_one("#port-input", Input).value = str(profile.get("port", 22))
+                self.query_one("#user-input", Input).value = str(profile.get("username", ""))
+                key_path = str(profile.get("key_path", ""))
+                if key_path:
+                    self.query_one("#auth-select", Select).value = "key"
+                    inp = self.query_one("#secret-input", Input)
+                    inp.password = False
+                    inp.value = key_path
+        elif event.select.id == "auth-select":
+            inp = self.query_one("#secret-input", Input)
+            inp.password = (event.value == "password")
+            inp.placeholder = (
+                "password" if event.value == "password" else "~/.ssh/id_rsa"
+            )
+            inp.value = ""
+            self.query_one("#secret-label", Label).update(
+                "Password" if event.value == "password" else "Key path"
+            )

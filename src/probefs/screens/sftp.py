@@ -1,7 +1,7 @@
 """SFTPScreen — dual-pane local↔remote file transfer screen.
 
 Layout:
-  ConnectionBar (top) — form when disconnected, status line when connected
+  Status bar (top) — shows connection state; press c to (re)connect
   Horizontal split:
     Left:  local DirectoryList (always active, remembers cwd from MainScreen)
     Right: remote DirectoryList (disabled until connected)
@@ -11,7 +11,7 @@ Layout:
 Active pane (local or remote) is indicated by a highlighted column border.
 Tab switches the active pane. j/k/l/h navigate the active pane.
 y transfers the highlighted item to the other pane's current directory.
-Escape returns to the main screen (connection is dropped).
+c opens the connect dialog. Escape returns to the main screen.
 """
 from __future__ import annotations
 
@@ -21,14 +21,12 @@ from pathlib import PurePosixPath
 from textual import work
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
-from textual.message import Message
 from textual.screen import Screen
 from textual.widgets import Footer, Label
 
 from probefs.config import save_sftp_host
 from probefs.core.file_manager import FileManagerCore
 from probefs.fs.probe_fs import ProbeFS
-from probefs.widgets.connection_bar import ConnectionBar
 from probefs.widgets.directory_list import DirectoryList
 
 
@@ -36,6 +34,13 @@ class SFTPScreen(Screen):
     """Dual-pane local ↔ remote SFTP file transfer screen."""
 
     DEFAULT_CSS = """
+    SFTPScreen #conn-status-bar {
+        height: 1;
+        background: $panel;
+        border-bottom: solid $primary;
+        padding: 0 1;
+        color: $text-muted;
+    }
     SFTPScreen #dual-panes {
         height: 1fr;
     }
@@ -73,13 +78,12 @@ class SFTPScreen(Screen):
 
     BINDINGS = [
         ("tab", "switch_pane", "Switch pane"),
+        ("c", "connect", "Connect"),
         ("y", "transfer", "Transfer"),
         ("escape", "leave", "Back"),
     ]
 
     # App-level bindings that don't apply to SFTPScreen.
-    # check_action returns False for these so the key is NOT consumed by the
-    # App binding and can fall through to SFTPScreen's own BINDINGS (e.g. y→transfer).
     _BLOCKED_ACTIONS = frozenset({
         "copy", "move", "delete", "rename", "new_file", "new_dir",
         "toggle_hidden", "sort", "filter", "goto", "copy_path",
@@ -102,7 +106,8 @@ class SFTPScreen(Screen):
         self._connected: bool = False
 
     def compose(self) -> ComposeResult:
-        yield ConnectionBar(initial_host=self._connect_to, id="connection-bar")
+        yield Label("Not connected  ·  press c to connect",
+                    id="conn-status-bar")
         with Horizontal(id="dual-panes"):
             with Vertical(id="local-col", classes="pane-col active-col"):
                 yield Label("LOCAL", classes="pane-header", id="local-header")
@@ -121,15 +126,8 @@ class SFTPScreen(Screen):
         start = self._local_start or local_fs.home()
         self._local_core = FileManagerCore(local_fs, start_path=start)
         self._load_local()
-        # Auto-connect if host supplied via CLI
-        if self._connect_to:
-            cb = self.query_one("#connection-bar", ConnectionBar)
-            # Host is already pre-filled — focus the user field
-            try:
-                from textual.widgets import Input
-                cb.query_one("#user-input", Input).focus()
-            except Exception:
-                pass
+        # Auto-open connect dialog after first render
+        self.call_after_refresh(self.action_connect)
 
     # ── Directory loading workers ─────────────────────────────────────────
 
@@ -179,16 +177,27 @@ class SFTPScreen(Screen):
 
     # ── Connection ────────────────────────────────────────────────────────
 
-    def on_connection_bar_connect_requested(
-        self, event: ConnectionBar.ConnectRequested
-    ) -> None:
+    def action_connect(self) -> None:
+        """Open the SFTP connection dialog."""
+        from probefs.widgets.dialogs import ConnectDialog
+        self.app.push_screen(
+            ConnectDialog(initial_host=self._connect_to or ""),
+            self._on_connect_dialog,
+        )
+
+    def _on_connect_dialog(self, result: dict | None) -> None:
+        if result is None:
+            return
         self.app.notify("Connecting…", timeout=10)
-        self._do_connect(event.host, event.port, event.username,
-                         event.auth, event.secret)
+        key_path = result["secret"] if result["auth"] == "key" else ""
+        self._do_connect(
+            result["host"], result["port"], result["username"],
+            result["auth"], result["secret"], key_path,
+        )
 
     @work(thread=True, exit_on_error=False)
     def _do_connect(self, host: str, port: int, username: str,
-                    auth: str, secret: str) -> None:
+                    auth: str, secret: str, key_path: str) -> None:
         """Worker: establish SFTP connection and list remote home."""
         kwargs: dict = {"host": host, "port": port, "username": username}
         if auth == "key":
@@ -200,7 +209,6 @@ class SFTPScreen(Screen):
         try:
             remote_fs = ProbeFS(protocol="sftp", **kwargs)
             remote_home = remote_fs.home()
-            # Verify we can actually list the home (confirms auth worked)
             remote_fs.ls(remote_home, detail=True)
         except Exception as exc:
             self.app.call_from_thread(
@@ -209,39 +217,32 @@ class SFTPScreen(Screen):
             return
 
         self.app.call_from_thread(
-            self._on_connected, host, port, username, auth, remote_fs, remote_home
+            self._on_connected, host, port, username, remote_fs, remote_home, key_path
         )
 
     def _on_connected(self, host: str, port: int, username: str,
-                      auth: str, remote_fs: ProbeFS, remote_home: str) -> None:
+                      remote_fs: ProbeFS, remote_home: str,
+                      key_path: str) -> None:
         """Main-thread: finalize connection, update UI, save profile."""
         self._remote_core = FileManagerCore(remote_fs, start_path=remote_home)
         self._connected = True
 
-        # Update UI
-        self.query_one("#connection-bar", ConnectionBar).set_connected(
-            host, port, username
+        self.query_one("#conn-status-bar", Label).update(
+            f"[bold $success]✓[/]  {username}@{host}:{port}"
+            f"  ·  tab switch pane  ·  c reconnect"
         )
-        remote_col = self.query_one("#remote-col")
-        remote_col.add_class("connected")
-
-        # Auto-save profile (no password stored)
-        key_path = ""  # only save key path, never password
-        if auth == "key":
-            secret = self.query_one("#connection-bar", ConnectionBar
-                                    ).query_one("#secret-input").value  # type: ignore
-            key_path = secret
+        self.query_one("#remote-col").add_class("connected")
         save_sftp_host(host, port, username, key_path)
 
         self.app.notify(f"Connected to {username}@{host}", timeout=3)
         self._load_remote()
 
-    def on_connection_bar_disconnect_requested(
-        self, event: ConnectionBar.DisconnectRequested
-    ) -> None:
+    def _disconnect(self) -> None:
         self._connected = False
         self._remote_core = None
-        self.query_one("#connection-bar", ConnectionBar).set_disconnected()
+        self.query_one("#conn-status-bar", Label).update(
+            "Not connected  ·  press c to connect"
+        )
         self.query_one("#remote-col").remove_class("connected")
         self.query_one("#pane-remote", DirectoryList).set_entries([])
         self.query_one("#remote-header", Label).update("REMOTE  (not connected)")
@@ -254,7 +255,6 @@ class SFTPScreen(Screen):
     def on_directory_list_entry_highlighted(
         self, event: DirectoryList.EntryHighlighted
     ) -> None:
-        # Suppress — no preview pane in SFTPScreen
         event.stop()
 
     def action_switch_pane(self) -> None:
@@ -262,8 +262,7 @@ class SFTPScreen(Screen):
             return
         self._active_pane = "remote" if self._active_pane == "local" else "local"
         self._refresh_active_border()
-        pane_id = f"pane-{self._active_pane}"
-        self.query_one(f"#{pane_id}", DirectoryList).focus()
+        self.query_one(f"#pane-{self._active_pane}", DirectoryList).focus()
 
     def _refresh_active_border(self) -> None:
         self.query_one("#local-col").set_class(self._active_pane == "local",
@@ -308,7 +307,8 @@ class SFTPScreen(Screen):
     def action_transfer(self) -> None:
         """Copy highlighted item from active pane to the other pane."""
         if not self._connected:
-            self.app.notify("Not connected", severity="warning")
+            self.app.notify("Not connected — press c to connect",
+                            severity="warning")
             return
 
         if self._active_pane == "local":
@@ -334,7 +334,8 @@ class SFTPScreen(Screen):
         dst_path = str(PurePosixPath(dst_dir) / basename)
 
         if entry.get("type") == "directory":
-            self.app.notify("Directory transfer not yet supported", severity="warning")
+            self.app.notify("Directory transfer not yet supported",
+                            severity="warning")
             return
 
         self.app.notify(f"{direction.capitalize()}ing {basename}…", timeout=30)
@@ -353,7 +354,6 @@ class SFTPScreen(Screen):
             return
         basename = src_path.split("/")[-1] if "/" in src_path else src_path
         self.app.notify(f"{direction.capitalize()}ed {basename}")
-        # Refresh the destination pane
         if direction == "upload":
             self.app.call_from_thread(self._load_remote)
         else:
