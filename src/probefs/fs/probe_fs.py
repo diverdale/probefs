@@ -65,19 +65,16 @@ class ProbeFS:
             protocol = protocol[0]
         if protocol in ("file", "local", "abstract"):
             return os.path.expanduser("~")
-        # SFTP: the server's initial CWD is the user's home directory.
-        # Try paramiko's getcwd() first (most reliable).
+        # SFTP: use paramiko's normalize(".") which sends a POSIX realpath
+        # request and returns the absolute canonical CWD (the server's home
+        # for this user).  getcwd() only works after chdir() so avoid it.
+        # info(".") returns name="." (relative) — not useful for navigation.
         try:
             ftp = getattr(self._fs, "ftp", None)
             if ftp is not None:
-                cwd = ftp.getcwd()
-                if cwd:
-                    return cwd
-        except Exception:
-            pass
-        # Fallback: fsspec info(".") normalises "." to the current path.
-        try:
-            return self._fs.info(".")["name"]
+                absolute = ftp.normalize(".")
+                if absolute and absolute != ".":
+                    return absolute
         except Exception:
             pass
         # Last resort.
