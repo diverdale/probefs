@@ -56,18 +56,32 @@ class ProbeFS:
         """Return the home directory for this filesystem.
 
         For local filesystems: os.path.expanduser("~").
-        For remote filesystems (SFTP etc.): attempts to resolve "~" via the
-        backend; falls back to "/" if the backend doesn't support it.
+        For SFTP: uses the paramiko client's getcwd() (the directory the server
+        puts you in on login, which is the remote home). Falls back through
+        several approaches before giving up and returning "/".
         """
         protocol = getattr(self._fs, "protocol", "file")
         if isinstance(protocol, (list, tuple)):
             protocol = protocol[0]
         if protocol in ("file", "local", "abstract"):
             return os.path.expanduser("~")
+        # SFTP: the server's initial CWD is the user's home directory.
+        # Try paramiko's getcwd() first (most reliable).
         try:
-            return self._fs.info("~")["name"]
+            ftp = getattr(self._fs, "ftp", None)
+            if ftp is not None:
+                cwd = ftp.getcwd()
+                if cwd:
+                    return cwd
         except Exception:
-            return "/"
+            pass
+        # Fallback: fsspec info(".") normalises "." to the current path.
+        try:
+            return self._fs.info(".")["name"]
+        except Exception:
+            pass
+        # Last resort.
+        return "/"
 
     def copy(self, src: str, dst: str) -> None:
         """Copy file or directory tree to dst.

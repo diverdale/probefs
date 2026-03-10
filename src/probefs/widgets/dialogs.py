@@ -323,7 +323,14 @@ class ConnectDialog(ModalScreen):
         padding: 1 2;
         width: 60;
         height: auto;
+        max-height: 90%;
         border: tall $primary;
+    }
+    ConnectDialog Vertical {
+        height: auto;
+    }
+    ConnectDialog Horizontal {
+        height: auto;
     }
     ConnectDialog #connect-title {
         text-align: center;
@@ -331,20 +338,15 @@ class ConnectDialog(ModalScreen):
         margin-bottom: 1;
         color: $accent;
     }
-    ConnectDialog Vertical {
-        height: auto;
-    }
     ConnectDialog Label.field-label {
         width: 100%;
         color: $text-muted;
         height: 1;
+        margin-top: 1;
     }
     ConnectDialog Input {
         width: 100%;
-        height: 1;
-        border: none;
-        padding: 0;
-        background: $surface;
+        margin-bottom: 0;
     }
     ConnectDialog Select {
         width: 100%;

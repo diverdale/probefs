@@ -164,16 +164,19 @@ class SFTPScreen(Screen):
         self.app.call_from_thread(self._apply_remote, entries)
 
     def _apply_remote(self, entries: list[dict]) -> None:
-        assert self._remote_core is not None
-        pane = self.query_one("#pane-remote", DirectoryList)
-        count = pane.set_entries(entries, show_hidden=self._remote_core.show_hidden,
-                                 sort_mode=self._remote_core.sort_mode)
-        self.query_one("#remote-header", Label).update(
-            f"REMOTE  {self._remote_core.cwd}"
-        )
-        self.query_one("#status-remote", Label).update(
-            f"remote: {self._remote_core.cwd}  ·  {count} items"
-        )
+        try:
+            assert self._remote_core is not None
+            pane = self.query_one("#pane-remote", DirectoryList)
+            count = pane.set_entries(entries, show_hidden=self._remote_core.show_hidden,
+                                     sort_mode=self._remote_core.sort_mode)
+            self.query_one("#remote-header", Label).update(
+                f"REMOTE  {self._remote_core.cwd}"
+            )
+            self.query_one("#status-remote", Label).update(
+                f"remote: {self._remote_core.cwd}  ·  {count} items"
+            )
+        except Exception as exc:
+            self.app.notify(f"Remote display error: {exc}", severity="error")
 
     # ── Connection ────────────────────────────────────────────────────────
 
