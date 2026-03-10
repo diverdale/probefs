@@ -231,6 +231,11 @@ class SFTPScreen(Screen):
             f"[bold $success]✓[/]  {username}@{host}:{port}"
             f"  ·  tab switch pane  ·  c reconnect"
         )
+        # Update header immediately so the pane doesn't show "not connected"
+        # while _load_remote is still fetching the directory listing.
+        self.query_one("#remote-header", Label).update(
+            f"REMOTE  {remote_home}  (loading…)"
+        )
         self.query_one("#remote-col").add_class("connected")
         save_sftp_host(host, port, username, key_path)
 

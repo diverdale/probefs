@@ -331,11 +331,13 @@ class ConnectDialog(ModalScreen):
         margin-bottom: 1;
         color: $accent;
     }
+    ConnectDialog Vertical {
+        height: auto;
+    }
     ConnectDialog Label.field-label {
         width: 100%;
         color: $text-muted;
         height: 1;
-        margin-top: 1;
     }
     ConnectDialog Input {
         width: 100%;
