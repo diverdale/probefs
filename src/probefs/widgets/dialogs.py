@@ -334,13 +334,24 @@ class ConnectDialog(ModalScreen):
     ConnectDialog Label.field-label {
         width: 100%;
         color: $text-muted;
+        height: 1;
         margin-top: 1;
     }
     ConnectDialog Input {
         width: 100%;
+        height: 1;
+        border: none;
+        padding: 0;
+        background: $surface;
     }
     ConnectDialog Select {
         width: 100%;
+        height: 1;
+    }
+    ConnectDialog Select SelectCurrent {
+        border: none !important;
+        padding: 0 1;
+        height: 1;
     }
     ConnectDialog #row-port-user {
         height: auto;
