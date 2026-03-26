@@ -31,7 +31,7 @@ classifiers = [
 dependencies = [
     "textual>=0.89.1",
     "fsspec>=2024.2.0",
-    "ruamel-yaml>=0.19.1",
+    "ruamel.yaml>=0.19.1",
     "send2trash>=2.1.0",
     "paramiko>=3.0.0",
 ]
