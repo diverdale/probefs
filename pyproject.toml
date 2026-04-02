@@ -34,8 +34,11 @@ dependencies = [
     "ruamel.yaml>=0.19.1",
     "send2trash>=2.1.0",
     "paramiko>=3.0.0",
+<<<<<<< gh-integration-test
     "rich>=13.0.0",
     "httpx>=0.27.0",
+=======
+>>>>>>> master
 ]
 
 [project.urls]
