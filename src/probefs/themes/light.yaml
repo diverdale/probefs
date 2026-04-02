@@ -14,3 +14,13 @@ warning: "#D97706"
 error: "#DC2626"
 success: "#16A34A"
 accent: "#0891B2"
+
+# File listing colors — Rich style strings (hex, rgb, or named colors)
+file_colors:
+  directory:     "bold #2563EB"
+  executable:    "bold #16A34A"
+  symlink:       "#0891B2"
+  broken_symlink: "bold #DC2626"
+  archive:       "#D97706"
+  image:         "#7C3AED"
+  file:          default

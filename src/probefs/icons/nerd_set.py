@@ -27,7 +27,7 @@ class NerdIconSet(IconSet):
     }
 
     # Colors are identical to ASCIIIconSet — same semantics, different glyphs.
-    _COLORS: dict[str, str] = {
+    _DEFAULT_COLORS: dict[str, str] = {
         "directory": "bold blue",
         "executable": "bold green",
         "symlink": "cyan",
@@ -37,10 +37,17 @@ class NerdIconSet(IconSet):
         "file": "default",
     }
 
+    def __init__(self, color_overrides: dict | None = None) -> None:
+        self._colors = dict(self._DEFAULT_COLORS)
+        if color_overrides:
+            for k, v in color_overrides.items():
+                if k in self._colors:
+                    self._colors[k] = str(v)
+
     def get_icon(self, category: str) -> str:
         """Return Nerd Font glyph for the given file category."""
         return self._ICONS.get(category, "\uf15b")  # default to file icon
 
     def get_color(self, category: str) -> str:
         """Return Rich color style string for the given file category."""
-        return self._COLORS.get(category, "default")
+        return self._colors.get(category, "default")

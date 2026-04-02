@@ -482,13 +482,26 @@ error:      "#FF5555"   # Error notifications and indicators
 success:    "#50FA7B"   # Success notifications and indicators
 accent:     "#8BE9FD"   # Bright accent for decorative elements
 
+# File listing colors — Rich style strings applied to entries in directory listings.
+# Values accept any Rich-compatible style: hex colors, named colors, or styles
+# like "bold #5B8DD9" or "italic cyan". All seven categories are optional;
+# omitted categories fall back to the icon set's built-in defaults.
+file_colors:
+  directory:     "bold #5B8DD9"
+  executable:    "bold #50FA7B"
+  symlink:       "#8BE9FD"
+  broken_symlink: "bold #FF5555"
+  archive:       "#FFB86C"
+  image:         "#FF79C6"
+  file:          default
+
 # Optional metadata — stored in the file but not used at runtime
 author:      "Your Name"
 description: "A brief description of the theme"
 version:     "1.0.0"
 ```
 
-Only `name` and `primary` are required. All other color fields are optional; unspecified fields fall back to the base theme's defaults.
+Only `name` and `primary` are required. All other fields are optional; unspecified fields fall back to the base theme's defaults.
 
 #### Color role reference
 
@@ -507,6 +520,22 @@ Only `name` and `primary` are required. All other color fields are optional; uns
 | `accent` | Highlighted text, links, secondary interactive elements |
 
 Textual automatically derives tinted variants from each color — `$primary-lighten-1`, `$panel-darken-2`, etc. — so you only need to define the base colors and the full range is generated for free.
+
+#### File listing color reference
+
+The `file_colors` section controls how each entry type is colored in directory listings. Values are [Rich style strings](https://rich.readthedocs.io/en/stable/style.html) — hex colors, terminal color names, or combined styles like `"bold #5B8DD9"`.
+
+| Category | Default (dark theme) | Description |
+|----------|----------------------|-------------|
+| `directory` | `bold #5B8DD9` | Directories |
+| `executable` | `bold #50FA7B` | Files with execute permission |
+| `symlink` | `#8BE9FD` | Symbolic links |
+| `broken_symlink` | `bold #FF5555` | Symlinks pointing to a missing target |
+| `archive` | `#FFB86C` | ZIP, tar, gz, and other archive formats |
+| `image` | `#FF79C6` | PNG, JPG, SVG, and other image formats |
+| `file` | `default` | All other files |
+
+> **Tip:** Using hex colors (e.g. `"#5B8DD9"`) ensures consistent rendering across terminals. Named ANSI colors like `"blue"` may render differently depending on the terminal's color palette — which is why directories might appear purple in some terminals.
 
 ---
 

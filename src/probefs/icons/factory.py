@@ -13,18 +13,21 @@ from .nerd_set import NerdIconSet
 from .yaml_set import YAMLIconSet
 
 
-def load_icon_set(config: dict) -> IconSet:
+def load_icon_set(config: dict, file_colors: dict | None = None) -> IconSet:
     """Return the appropriate IconSet based on config.
 
     Args:
         config: Application config dict. Inspects the 'icons' key.
+        file_colors: Optional dict mapping category names to Rich color style
+            strings, sourced from the active theme's file_colors section.
+            Overrides the icon set's built-in defaults for any category present.
 
     Returns:
         An IconSet instance appropriate for the given config.
     """
     icon_cfg = config.get("icons", "ascii")
     if icon_cfg == "nerd":
-        return NerdIconSet()
+        return NerdIconSet(color_overrides=file_colors)
     if isinstance(icon_cfg, dict) and icon_cfg.get("theme_file"):
         return YAMLIconSet(icon_cfg["theme_file"])
-    return ASCIIIconSet()
+    return ASCIIIconSet(color_overrides=file_colors)

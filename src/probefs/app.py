@@ -86,6 +86,7 @@ class ProbeFSApp(App):
     def __init__(self, sftp_host: str | None = None) -> None:
         super().__init__()
         self._sftp_host = sftp_host
+        self._file_colors: dict = {}
         init_config_dir()
         config = load_config()
         self._setup_themes(config)
@@ -99,17 +100,23 @@ class ProbeFSApp(App):
         2. Register optional custom theme from config
         3. Set self.theme LAST (after all registrations)
         """
+        file_colors_registry: dict[str, dict] = {}
+
         # Step 1: Register all built-in probefs themes
-        for theme in load_all_builtin_themes():
+        for theme, fc in load_all_builtin_themes():
             self.register_theme(theme)
+            if fc:
+                file_colors_registry[theme.name] = fc
 
         # Step 2: Load and register all themes from ~/.probefs/themes/
         td = themes_dir()
         if td.is_dir():
             for theme_path in sorted(td.glob("*.yaml")):
                 try:
-                    custom = ThemeLoader.load(theme_path)
+                    custom, fc = ThemeLoader.load(theme_path)
                     self.register_theme(custom)
+                    if fc:
+                        file_colors_registry[custom.name] = fc
                 except ThemeValidationError as e:
                     print(f"Warning: Theme file {str(theme_path)!r} is invalid: {e}")
 
@@ -117,8 +124,10 @@ class ProbeFSApp(App):
         theme_file = config.get("theme_file")
         if theme_file:
             try:
-                custom = ThemeLoader.load(theme_file)
+                custom, fc = ThemeLoader.load(theme_file)
                 self.register_theme(custom)
+                if fc:
+                    file_colors_registry[custom.name] = fc
             except ThemeValidationError as e:
                 # Invalid theme YAML — print warning, continue with built-ins
                 print(f"Warning: Theme file {theme_file!r} is invalid: {e}")
@@ -136,6 +145,9 @@ class ProbeFSApp(App):
                 f"Falling back to {DEFAULT_THEME!r}."
             )
             self.theme = DEFAULT_THEME
+
+        # Step 5: Store file_colors for the active theme so widgets can use them
+        self._file_colors = file_colors_registry.get(self.theme, {})
 
     def _setup_keybindings(self, config: dict) -> None:
         """Apply user keybinding overrides from config['keybindings'].

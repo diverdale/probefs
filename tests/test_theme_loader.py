@@ -157,9 +157,10 @@ class TestValidate:
 class TestLoadFromString:
     def test_valid_minimal_yaml_returns_theme(self):
         yaml_str = "name: test-theme\nprimary: '#5B8DD9'\n"
-        theme = ThemeLoader.load_from_string(yaml_str)
+        theme, file_colors = ThemeLoader.load_from_string(yaml_str)
         assert isinstance(theme, Theme)
         assert theme.name == "test-theme"
+        assert file_colors == {}
 
     def test_valid_full_yaml_returns_theme(self):
         yaml_str = """\
@@ -169,9 +170,21 @@ primary: '#5B8DD9'
 secondary: '#2D4A8A'
 background: '#1C2023'
 """
-        theme = ThemeLoader.load_from_string(yaml_str)
+        theme, file_colors = ThemeLoader.load_from_string(yaml_str)
         assert isinstance(theme, Theme)
         assert theme.name == "probefs-dark"
+        assert file_colors == {}
+
+    def test_file_colors_returned(self):
+        yaml_str = """\
+name: t
+primary: '#5B8DD9'
+file_colors:
+  directory: "bold #5B8DD9"
+  file: default
+"""
+        theme, file_colors = ThemeLoader.load_from_string(yaml_str)
+        assert file_colors == {"directory": "bold #5B8DD9", "file": "default"}
 
     def test_default_source_label(self):
         yaml_str = "not valid yaml:\n  - oops\n  bad:"
@@ -227,9 +240,10 @@ class TestLoad:
     def test_valid_file_returns_theme(self, tmp_path):
         f = tmp_path / "my-theme.yaml"
         f.write_text("name: my-theme\nprimary: '#5B8DD9'\n")
-        theme = ThemeLoader.load(f)
+        theme, file_colors = ThemeLoader.load(f)
         assert isinstance(theme, Theme)
         assert theme.name == "my-theme"
+        assert file_colors == {}
 
     def test_missing_file_raises_file_not_found(self, tmp_path):
         with pytest.raises(FileNotFoundError):
@@ -245,7 +259,7 @@ class TestLoad:
     def test_load_accepts_string_path(self, tmp_path):
         f = tmp_path / "t.yaml"
         f.write_text("name: t\nprimary: '#aabbcc'\n")
-        theme = ThemeLoader.load(str(f))
+        theme, file_colors = ThemeLoader.load(str(f))
         assert isinstance(theme, Theme)
 
     def test_valid_file_with_all_color_fields(self, tmp_path):
@@ -265,9 +279,21 @@ panel: '#1E2528'
 boost: '#8BE9FD'
 dark: true
 """)
-        theme = ThemeLoader.load(f)
+        theme, file_colors = ThemeLoader.load(f)
         assert isinstance(theme, Theme)
         assert theme.name == "full-theme"
+
+    def test_file_colors_returned_from_file(self, tmp_path):
+        f = tmp_path / "colored.yaml"
+        f.write_text("""\
+name: colored-theme
+primary: '#5B8DD9'
+file_colors:
+  directory: "bold #5B8DD9"
+  executable: "bold #50FA7B"
+""")
+        theme, file_colors = ThemeLoader.load(f)
+        assert file_colors == {"directory": "bold #5B8DD9", "executable": "bold #50FA7B"}
 
     def test_non_mapping_yaml_raises_validation_error(self, tmp_path):
         f = tmp_path / "list.yaml"

@@ -14,3 +14,13 @@ warning: "#FFB86C"
 error: "#FF5555"
 success: "#50FA7B"
 accent: "#8BE9FD"
+
+# File listing colors — Rich style strings (hex, rgb, or named colors)
+file_colors:
+  directory:     "bold #5B8DD9"
+  executable:    "bold #50FA7B"
+  symlink:       "#8BE9FD"
+  broken_symlink: "bold #FF5555"
+  archive:       "#FFB86C"
+  image:         "#FF79C6"
+  file:          default

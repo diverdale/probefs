@@ -33,6 +33,11 @@ COLOR_FIELDS = (
 
 REQUIRED_FIELDS = ("name", "primary")
 
+FILE_COLOR_CATEGORIES: frozenset[str] = frozenset({
+    "directory", "file", "executable", "symlink",
+    "broken_symlink", "archive", "image",
+})
+
 
 class ThemeValidationError(Exception):
     """Raised when a theme YAML file fails validation.
@@ -59,7 +64,7 @@ class ThemeLoader:
     """
 
     @classmethod
-    def load(cls, path: str | Path) -> Theme:
+    def load(cls, path: str | Path) -> tuple[Theme, dict]:
         """Load and validate a user theme YAML file.
 
         Creates a new YAML() instance per call (not module-level — not
@@ -69,7 +74,9 @@ class ThemeLoader:
             path: Path to the theme YAML file (str or Path).
 
         Returns:
-            A validated Theme object.
+            A tuple of (Theme, file_colors) where file_colors is a dict
+            mapping category names to Rich color style strings (empty if not
+            specified in the YAML).
 
         Raises:
             ThemeValidationError: If the file has any schema or color errors.
@@ -86,10 +93,10 @@ class ThemeLoader:
         if errors:
             raise ThemeValidationError(errors, str(path))
 
-        return cls._build_theme(data)
+        return cls._build_theme(data), cls._extract_file_colors(data)
 
     @classmethod
-    def load_from_string(cls, content: str, source_label: str = "<string>") -> Theme:
+    def load_from_string(cls, content: str, source_label: str = "<string>") -> tuple[Theme, dict]:
         """Load and validate a theme from a YAML string.
 
         Used for built-in themes loaded via importlib.resources.
@@ -99,7 +106,9 @@ class ThemeLoader:
             source_label: Label for error messages (e.g. filename).
 
         Returns:
-            A validated Theme object.
+            A tuple of (Theme, file_colors) where file_colors is a dict
+            mapping category names to Rich color style strings (empty if not
+            specified in the YAML).
 
         Raises:
             ThemeValidationError: If the content has any schema or color errors.
@@ -114,7 +123,7 @@ class ThemeLoader:
         if errors:
             raise ThemeValidationError(errors, source_label)
 
-        return cls._build_theme(data)
+        return cls._build_theme(data), cls._extract_file_colors(data)
 
     @classmethod
     def _validate(cls, data: object) -> list[str]:
@@ -152,7 +161,32 @@ class ThemeLoader:
                 f"got {type(data['dark']).__name__}: {data['dark']!r}"
             )
 
+        file_colors = data.get("file_colors")
+        if file_colors is not None:
+            if not isinstance(file_colors, dict):
+                errors.append("'file_colors' must be a YAML mapping (key: value pairs)")
+            else:
+                for cat in file_colors:
+                    if cat not in FILE_COLOR_CATEGORIES:
+                        errors.append(
+                            f"Unknown file_colors category: {cat!r}. "
+                            f"Valid categories: {sorted(FILE_COLOR_CATEGORIES)}"
+                        )
+
         return errors
+
+    @classmethod
+    def _extract_file_colors(cls, data: dict) -> dict:
+        """Extract file_colors mapping from validated theme data.
+
+        Returns a dict mapping category name to Rich color style string.
+        Only includes categories present in FILE_COLOR_CATEGORIES.
+        Returns an empty dict if file_colors is absent or empty.
+        """
+        raw = data.get("file_colors")
+        if not isinstance(raw, dict):
+            return {}
+        return {k: str(v) for k, v in raw.items() if k in FILE_COLOR_CATEGORIES}
 
     @classmethod
     def _build_theme(cls, data: dict) -> Theme:

@@ -64,6 +64,9 @@ class PreviewPane(Widget):
         from rich.text import Text
         from rich.console import Group
 
+        file_colors = getattr(self.app, "_file_colors", {})
+        dir_color = file_colors.get("directory", "bold blue")
+
         lines = []
         dirs  = [e for e in entries if e.get("type") == "directory"]
         files = [e for e in entries if e.get("type") != "directory"]
@@ -75,7 +78,7 @@ class PreviewPane(Widget):
                 continue
             is_dir = entry.get("type") == "directory"
             size_str = "     -" if is_dir else f"{human_size(entry.get('size', 0)):>6}"
-            color = "bold blue" if is_dir else "default"
+            color = dir_color if is_dir else "default"
             suffix = "/" if is_dir else ""
             line = Text()
             line.append(f"{size_str}  ", style="cyan")

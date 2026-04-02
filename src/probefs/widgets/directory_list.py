@@ -54,6 +54,7 @@ class DirectoryList(Widget, can_focus=True):
         self._sort_mode: str = "name_asc"
         self._show_hidden: bool = False
         self._icon_set: IconSet = load_icon_set(load_config())
+        self._icon_set_fc_id: int = 0  # id() of last file_colors used to build icon set
 
     def compose(self) -> ComposeResult:
         yield DataTable(cursor_type="row", show_header=False, show_cursor=True)
@@ -96,6 +97,16 @@ class DirectoryList(Widget, can_focus=True):
 
     def _apply(self) -> int:
         """Filter + sort _all_entries, repopulate DataTable. Returns visible count."""
+        # Refresh icon set if the app's file_colors have not been applied yet.
+        # Uses id() so this is a one-time update per file_colors dict instance.
+        try:
+            fc = getattr(self.app, "_file_colors", None)
+            if id(fc) != self._icon_set_fc_id:
+                self._icon_set = load_icon_set(load_config(), file_colors=fc or None)
+                self._icon_set_fc_id = id(fc)
+        except Exception:
+            pass
+
         # Step 1: hidden filter
         entries = [
             e for e in self._all_entries
