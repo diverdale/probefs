@@ -1,4 +1,5 @@
 """ProbeFSApp — Textual application entry point for probefs."""
+# gh integration test
 from __future__ import annotations
 
 from textual.app import App, InvalidThemeError
