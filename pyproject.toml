@@ -34,7 +34,6 @@ dependencies = [
     "ruamel.yaml>=0.19.1",
     "send2trash>=2.1.0",
     "paramiko>=3.0.0",
-    "rich>=13.0.0",
     "pydantic>=2.0.0",
 ]
 
