@@ -21,8 +21,10 @@ from __future__ import annotations
 from textual import work
 from textual.app import ComposeResult
 from textual.widget import Widget
-from textual.widgets import ContentSwitcher, Static
+from textual.widgets import ContentSwitcher, Label, Static
 from textual.worker import get_current_worker
+
+from probefs.rendering.cockpit import build_preview_meta
 
 
 # Truncation notice appended when file exceeds MAX_PREVIEW_BYTES
@@ -32,16 +34,35 @@ _TRUNCATION_NOTICE = "\n\n[dim]--- preview truncated at 512 KB ---[/dim]"
 class PreviewPane(Widget):
     """Right pane: shows syntax-highlighted file preview or directory listing."""
 
+    DEFAULT_CSS = """
+    PreviewPane #preview-header {
+        height: 1;
+        width: 100%;
+        color: $text-muted;
+        background: $panel-darken-1;
+        padding: 0 1;
+    }
+    PreviewPane ContentSwitcher {
+        height: 1fr;
+    }
+    """
+
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._preview_gen: int = 0
 
     def compose(self) -> ComposeResult:
+        yield Label("", id="preview-header")
         with ContentSwitcher(initial="preview-file"):
             yield Static("", id="preview-file", markup=True)
 
+    def update_meta(self, entry: dict) -> None:
+        """Update the metadata readout strip above the preview content."""
+        self.query_one("#preview-header", Label).update(build_preview_meta(entry))
+
     def show_entry(self, entry: dict) -> None:
         """Dispatch preview update based on entry type. Called from CursorChanged handler."""
+        self.update_meta(entry)
         self._preview_gen += 1
         entry_type = entry.get("type", "unknown")
         path = entry.get("name", "")

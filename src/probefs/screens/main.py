@@ -12,7 +12,7 @@ from textual import work
 from textual.app import ComposeResult
 from textual.message import Message
 from textual.screen import Screen
-from textual.containers import Horizontal
+from textual.containers import Horizontal, Vertical
 
 from textual.widgets import Footer
 
@@ -21,6 +21,7 @@ from probefs.fs.probe_fs import ProbeFS
 from probefs.widgets.dialogs import AboutDialog, ConfirmDialog, HelpDialog, InputDialog
 from probefs.widgets.directory_list import DirectoryList
 from probefs.widgets.filter_bar import FilterBar
+from probefs.widgets.header_bar import HeaderBar
 from probefs.widgets.preview_pane import PreviewPane
 from probefs.widgets.status_bar import StatusBar
 
@@ -28,10 +29,14 @@ from probefs.widgets.status_bar import StatusBar
 class DirectoryLoaded(Message):
     """Posted by _load_panes worker when a directory listing is ready."""
 
-    def __init__(self, entries: list[dict], pane: str, free_space: int = 0) -> None:
+    def __init__(
+        self, entries: list[dict], pane: str, disk_total: int = 0, disk_free: int = 0
+    ) -> None:
         self.entries = entries
         self.pane = pane  # "parent" or "current"
-        self.free_space = free_space  # bytes free; only populated for pane="current"
+        # Disk figures only populated for pane="current".
+        self.disk_total = disk_total
+        self.disk_free = disk_free
         super().__init__()
 
 
@@ -47,11 +52,13 @@ class MainScreen(Screen):
     """Three-pane file browser screen: parent | current | preview."""
 
     def compose(self) -> ComposeResult:
-        with Horizontal(id="panes"):
-            yield DirectoryList(id="pane-parent")
-            yield DirectoryList(id="pane-current")
-            yield PreviewPane(id="pane-preview")
-        yield StatusBar(id="status-bar")
+        with Vertical(id="cockpit"):
+            yield HeaderBar(id="header-bar")
+            with Horizontal(id="panes"):
+                yield DirectoryList(id="pane-parent")
+                yield DirectoryList(id="pane-current")
+                yield PreviewPane(id="pane-preview")
+            yield StatusBar(id="status-bar")
         yield FilterBar(id="filter-bar")
         yield Footer()
 
@@ -60,6 +67,18 @@ class MainScreen(Screen):
         import os
         fs = ProbeFS()
         self.core = FileManagerCore(fs, start_path=os.getcwd())
+        # Basename to re-select in the current pane on the next load (set when
+        # ascending so the cursor lands on the directory we just came out of).
+        self._pending_current_highlight: str | None = None
+        # Static instrument chrome — the current pane is always the active one.
+        self.query_one("#header-bar", HeaderBar).path = self.core.cwd
+        self.query_one("#pane-parent", DirectoryList).set_title("PARENT")
+        self.query_one("#pane-current", DirectoryList).set_title(
+            PurePosixPath(self.core.cwd).name or "/", active=True
+        )
+        status = self.query_one("#status-bar", StatusBar)
+        status.set_connection("LOCAL")
+        status.set_sort(SORT_LABELS[self.core.sort_mode])
         self._load_panes()
 
     @work(thread=True, exclusive=True, exit_on_error=False)
@@ -71,8 +90,11 @@ class MainScreen(Screen):
         """
         try:
             current_entries = self.core.fs.ls(self.core.cwd, detail=True)
-            free_space = self.core.fs.disk_usage(self.core.cwd)
-            self.post_message(DirectoryLoaded(current_entries, pane="current", free_space=free_space))
+            usage = self.core.fs.disk_usage(self.core.cwd)
+            self.post_message(DirectoryLoaded(
+                current_entries, pane="current",
+                disk_total=usage.total, disk_free=usage.free,
+            ))
         except Exception as exc:
             self.post_message(DirectoryLoadFailed(str(exc)))
             return
@@ -87,22 +109,41 @@ class MainScreen(Screen):
         """Update the appropriate pane with loaded entries. Update status bar for current pane."""
         if message.pane == "current":
             pane = self.query_one("#pane-current", DirectoryList)
-            visible_count = pane.set_entries(
+            pane.set_entries(
                 message.entries,
                 show_hidden=self.core.show_hidden,
                 sort_mode=self.core.sort_mode,
             )
-            # Update status bar: path, sort label, item count, free space
+            pane.set_title(PurePosixPath(self.core.cwd).name or "/", active=True)
+            self.query_one("#header-bar", HeaderBar).path = self.core.cwd
+            # Update instrument readouts: sort lamp, counts, hidden lamp, disk gauge.
             status = self.query_one("#status-bar", StatusBar)
-            status.path = self.core.cwd
-            status.sort_mode = SORT_LABELS[self.core.sort_mode]
-            status.item_count = visible_count
-            if message.free_space > 0:
-                free_gb = message.free_space / (1024 ** 3)
-                status.free_space = f"{free_gb:.1f} GB free"
+            status.set_sort(SORT_LABELS[self.core.sort_mode])
+            status.set_hidden(self.core.show_hidden)
+            status.set_disk(message.disk_total, message.disk_free)
+            self._sync_counts()
+            # After ascending, land the cursor on the directory we just left.
+            if self._pending_current_highlight is not None:
+                idx = pane.index_of(self._pending_current_highlight)
+                if idx is not None:
+                    pane.highlight_index(idx)
+                self._pending_current_highlight = None
         else:
             pane = self.query_one("#pane-parent", DirectoryList)
             pane.set_entries(message.entries, show_hidden=self.core.show_hidden)
+            pane.set_title("PARENT")
+            # Highlight the entry for the directory we're currently inside, so the
+            # parent pane shows where we are instead of always sitting on row 0.
+            idx = pane.index_of(PurePosixPath(self.core.cwd).name)
+            if idx is not None:
+                pane.highlight_index(idx)
+
+    def _sync_counts(self) -> None:
+        """Push the current pane's visible dir/file breakdown to the status bar."""
+        pane = self.query_one("#pane-current", DirectoryList)
+        status = self.query_one("#status-bar", StatusBar)
+        dirs, files = pane.visible_counts()
+        status.set_counts(dirs + files, dirs, files)
 
     def on_directory_load_failed(self, message: DirectoryLoadFailed) -> None:
         """Show error notification when directory load fails."""
@@ -174,8 +215,10 @@ class MainScreen(Screen):
                     self.notify(f"Cannot open: {exc}", severity="error")
 
     def action_leave_dir(self) -> None:
-        """Ascend to the parent directory."""
+        """Ascend to the parent directory, re-selecting the dir we came from."""
+        child = PurePosixPath(self.core.cwd).name
         self.core.ascend()
+        self._pending_current_highlight = child or None
         self._load_panes()
 
     def action_toggle_hidden(self) -> None:
@@ -187,10 +230,9 @@ class MainScreen(Screen):
         """Cycle sort mode. 's' key binding."""
         new_mode = self.core.next_sort_mode()
         pane = self.query_one("#pane-current", DirectoryList)
-        visible_count = pane.reapply(self.core.show_hidden, new_mode)
-        status = self.query_one("#status-bar", StatusBar)
-        status.sort_mode = SORT_LABELS[new_mode]
-        status.item_count = visible_count
+        pane.reapply(self.core.show_hidden, new_mode)
+        self.query_one("#status-bar", StatusBar).set_sort(SORT_LABELS[new_mode])
+        self._sync_counts()
 
     def action_filter(self) -> None:
         """Open filter bar. '/' key binding."""
@@ -202,10 +244,9 @@ class MainScreen(Screen):
     def _deactivate_filter(self) -> None:
         """Clear filter, restore Footer, refocus current pane."""
         pane = self.query_one("#pane-current", DirectoryList)
-        visible_count = pane.set_filter("")
-        status = self.query_one("#status-bar", StatusBar)
-        status.set_filter_active(False)
-        status.item_count = visible_count
+        pane.set_filter("")
+        self.query_one("#status-bar", StatusBar).set_filter_active(False)
+        self._sync_counts()
         footer = self.query_one(Footer)
         footer.display = True
         self.query_one("#pane-current", DirectoryList).focus()
@@ -213,10 +254,9 @@ class MainScreen(Screen):
     def on_filter_bar_filter_changed(self, event: FilterBar.FilterChanged) -> None:
         """Live update as user types in filter bar."""
         pane = self.query_one("#pane-current", DirectoryList)
-        visible_count = pane.set_filter(event.text)
-        status = self.query_one("#status-bar", StatusBar)
-        status.set_filter_active(bool(event.text))
-        status.item_count = visible_count
+        pane.set_filter(event.text)
+        self.query_one("#status-bar", StatusBar).set_filter_active(bool(event.text))
+        self._sync_counts()
 
     def on_filter_bar_filter_cleared(self, event: FilterBar.FilterCleared) -> None:
         """Escape pressed — remove filter, restore Footer."""
@@ -225,10 +265,9 @@ class MainScreen(Screen):
     def on_filter_bar_filter_submitted(self, event: FilterBar.FilterSubmitted) -> None:
         """Enter pressed — keep filter active, close bar, refocus pane."""
         pane = self.query_one("#pane-current", DirectoryList)
-        visible_count = pane.set_filter(event.text)
-        status = self.query_one("#status-bar", StatusBar)
-        status.set_filter_active(bool(event.text))
-        status.item_count = visible_count
+        pane.set_filter(event.text)
+        self.query_one("#status-bar", StatusBar).set_filter_active(bool(event.text))
+        self._sync_counts()
         footer = self.query_one(Footer)
         footer.display = True
         pane.focus()

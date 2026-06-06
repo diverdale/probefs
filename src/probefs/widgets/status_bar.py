@@ -1,86 +1,124 @@
-"""StatusBar — single-line docked widget showing filesystem context.
+"""StatusBar — two-line instrument readout docked at the bottom of MainScreen.
 
-Displays four fields:
-  - path: the current working directory
-  - sort_mode: active sort label (e.g. "name ↑")
-  - item_count: number of items in the current directory
-  - free_space: available disk space (e.g. "42.3 GB free")
+Line 1: indicator lamps (connection · sort · hidden · filter) on the left,
+        item breakdown (total ▸ dirs · files) on the right.
+Line 2: disk-usage gauge (DISK [████░░] 64% · 704.2 G free), colored by fullness.
 
-Wired by MainScreen: updated after every DirectoryLoaded message and
-cursor change. Uses Textual reactive attributes + watch_ pattern so
-Label widgets update automatically when attributes are set from outside.
-
-Layout: four Labels in a Horizontal. Path is left-aligned and expands
-to fill available space. Sort, count and space are right-aligned fixed widths.
+The current path now lives in the HeaderBar, not here. State is set by
+MainScreen via the set_* methods after each DirectoryLoaded message and on
+sort/hidden/filter changes; each setter refreshes the affected line.
 """
 from __future__ import annotations
 
+from rich.text import Text
+
 from textual.app import ComposeResult
-from textual.reactive import reactive
+from textual.containers import Horizontal
 from textual.widget import Widget
 from textual.widgets import Label
 
+from probefs.config import load_config
+from probefs.rendering.cockpit import build_gauge, build_lamps
+from probefs.rendering.metadata import human_size
+
 
 class StatusBar(Widget):
-    """One-line status bar showing current path, sort mode, item count, and free space."""
+    """Two-line cockpit status readout: lamps + breakdown, and a disk gauge."""
 
     DEFAULT_CSS = """
     StatusBar {
-        height: 1;
+        height: 2;
         background: $panel-darken-1;
-        layout: horizontal;
         padding: 0 1;
     }
-    StatusBar #sb-path {
+    StatusBar #sb-row1 {
+        height: 1;
+    }
+    StatusBar #sb-lamps {
         width: 1fr;
-        color: $text;
     }
-    StatusBar #sb-sort {
-        width: 10;
-        color: $accent;
-        text-align: right;
-    }
-    StatusBar #sb-count {
-        width: 12;
+    StatusBar #sb-breakdown {
+        width: auto;
         color: $text-muted;
         text-align: right;
     }
-    StatusBar #sb-space {
-        width: 16;
-        color: $text-muted;
-        text-align: right;
+    StatusBar #sb-gauge {
+        height: 1;
+        width: 100%;
     }
     """
 
-    path: reactive[str] = reactive("")
-    sort_mode: reactive[str] = reactive("name ↑")
-    item_count: reactive[int] = reactive(0)
-    free_space: reactive[str] = reactive("")
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._ascii: bool = bool(load_config().get("cockpit_ascii", False))
+        self._connection: str = "LOCAL"
+        self._sort_label: str = "name ↑"
+        self._hidden: bool = False
+        self._filter_active: bool = False
+        self._total: int = 0
+        self._dirs: int = 0
+        self._files: int = 0
+        self._disk_total: int = 0
+        self._disk_free: int = 0
 
     def compose(self) -> ComposeResult:
-        yield Label("", id="sb-path")
-        yield Label("", id="sb-sort")
-        yield Label("", id="sb-count")
-        yield Label("", id="sb-space")
+        with Horizontal(id="sb-row1"):
+            yield Label("", id="sb-lamps")
+            yield Label("", id="sb-breakdown")
+        yield Label("", id="sb-gauge")
 
-    def watch_path(self, value: str) -> None:
-        self.query_one("#sb-path", Label).update(value)
+    # -- public setters (called by MainScreen) -------------------------------
 
-    def watch_sort_mode(self, value: str) -> None:
-        self.query_one("#sb-sort", Label).update(value)
+    def set_connection(self, label: str) -> None:
+        self._connection = label
+        self._refresh_lamps()
 
-    def watch_item_count(self, value: int) -> None:
-        label = f"{value} items" if not self._filter_active else f"{value} matched"
-        self.query_one("#sb-count", Label).update(label)
+    def set_sort(self, label: str) -> None:
+        self._sort_label = label
+        self._refresh_lamps()
 
-    def watch_free_space(self, value: str) -> None:
-        self.query_one("#sb-space", Label).update(value)
-
-    # Filter-active flag: when True, item count label says "matched" instead of "items"
-    _filter_active: bool = False
+    def set_hidden(self, hidden: bool) -> None:
+        self._hidden = hidden
+        self._refresh_lamps()
 
     def set_filter_active(self, active: bool) -> None:
-        """Toggle the filter-active state (affects item_count label wording)."""
         self._filter_active = active
-        # Re-trigger watch to update label wording
-        self.watch_item_count(self.item_count)
+        self._refresh_lamps()
+        self._refresh_breakdown()
+
+    def set_counts(self, total: int, dirs: int, files: int) -> None:
+        self._total, self._dirs, self._files = total, dirs, files
+        self._refresh_breakdown()
+
+    def set_disk(self, total: int, free: int) -> None:
+        self._disk_total, self._disk_free = total, free
+        self._refresh_gauge()
+
+    # -- line builders -------------------------------------------------------
+
+    def _refresh_lamps(self) -> None:
+        lamps = build_lamps(
+            connection=self._connection,
+            sort_label=self._sort_label,
+            hidden=self._hidden,
+            filter_active=self._filter_active,
+            ascii=self._ascii,
+        )
+        self.query_one("#sb-lamps", Label).update(lamps)
+
+    def _refresh_breakdown(self) -> None:
+        if self._filter_active:
+            text = f"{self._total} matched"
+        else:
+            arrow = ">" if self._ascii else "▸"
+            text = f"{self._total} {arrow} {self._dirs} d · {self._files} f"
+        self.query_one("#sb-breakdown", Label).update(text)
+
+    def _refresh_gauge(self) -> None:
+        used = max(0, self._disk_total - self._disk_free)
+        gauge = build_gauge(used, self._disk_total, ascii=self._ascii)
+        line = Text("DISK ", style="dim")
+        line.append_text(gauge)
+        if self._disk_total > 0:
+            line.append(f"  ·  {human_size(self._disk_free).strip()} free", style="dim")
+        self.query_one("#sb-gauge", Label).update(line)
