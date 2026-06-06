@@ -9,11 +9,20 @@ from __future__ import annotations
 import os
 import shutil
 from pathlib import PurePosixPath
+from typing import NamedTuple
 
 import fsspec
 from send2trash import send2trash as _send2trash
 
 MAX_PREVIEW_BYTES: int = 524_288  # 512 KB — module-level constant, not inside the class
+
+
+class DiskUsage(NamedTuple):
+    """Disk usage figures in bytes for the filesystem containing a path."""
+
+    total: int
+    used: int
+    free: int
 
 
 class ProbeFS:
@@ -355,11 +364,11 @@ class ProbeFS:
         except tarfile.TarError as exc:
             raise ValueError(f"Not a recognized archive: {exc}") from exc
 
-    def disk_usage(self, path: str) -> int:
-        """Return free disk space in bytes for the filesystem containing path.
+    def disk_usage(self, path: str) -> DiskUsage:
+        """Return total/used/free disk space (bytes) for the fs containing path.
 
-        Uses shutil.disk_usage internally (stdlib, no deps). Returns the .free
-        field of the usage namedtuple as an integer (bytes).
+        Uses shutil.disk_usage internally (stdlib, no deps). Returns a DiskUsage
+        namedtuple so callers can render a fullness gauge, not just free space.
 
         FAL boundary — callers (MainScreen worker) must use this, never shutil directly.
         This method may block briefly on network filesystems; always call from a thread.
@@ -367,7 +376,7 @@ class ProbeFS:
         Raises OSError if path does not exist or stat fails.
         """
         usage = shutil.disk_usage(path)
-        return usage.free
+        return DiskUsage(total=usage.total, used=usage.used, free=usage.free)
 
 
 def _fmt_size(n: int) -> str:

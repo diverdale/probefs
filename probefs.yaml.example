@@ -22,6 +22,16 @@ theme: probefs-dark
 icons: ascii
 
 # ---------------------------------------------------------------------------
+# Cockpit / instrument-panel chrome
+# ---------------------------------------------------------------------------
+
+# The header breadcrumb, status lamps, and disk gauge use standard Unicode
+# glyphs (● ◐ █ ░ › ◆) by default — these are not Nerd Font glyphs and render
+# in virtually every modern terminal. Set cockpit_ascii: true to swap them for
+# ASCII-safe equivalents ([##--], [*], >, *) on dumb/limited terminals.
+# cockpit_ascii: false
+
+# ---------------------------------------------------------------------------
 # Keybinding overrides
 # ---------------------------------------------------------------------------
 # An override replaces ALL default keys for that action.

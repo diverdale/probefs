@@ -51,7 +51,15 @@ This is the new default look — there is no on/off switch for the cockpit itsel
 3. `StatusBar` (`#status-bar`) — `border-top` provides the rule above the lamps; height 2.
 
 `FilterBar` and `Footer` remain where they are. The outer `Vertical`'s border
-draws the full box; inner section rules come from per-section border edges.
+draws the full box.
+
+**As-built note:** the inner horizontal section rules (border edges on the
+header/status bars) collided with the outer frame's 1fr layout — Textual
+mis-budgeted the bordered flex children, clipping the bottom status row onto the
+outer border. They were replaced with distinct background bands (the header and
+status bars each have their own `$panel-darken-1` background), which read as
+section separation without the layout collision. The outer frame and colored
+pane-title rows are unchanged.
 
 ### Active pane
 

@@ -1,3 +1,9 @@
+/* Cockpit frame: one outer border wrapping header + panes + status. */
+#cockpit {
+    height: 1fr;
+    border: round $primary;
+}
+
 #panes {
     layout: horizontal;
     height: 1fr;
@@ -18,10 +24,5 @@
 }
 
 DirectoryList DataTable {
-    height: 100%;
     background: $panel;
-}
-
-StatusBar {
-    height: 1;
 }

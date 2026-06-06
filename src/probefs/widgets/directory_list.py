@@ -16,7 +16,7 @@ from __future__ import annotations
 from textual.app import ComposeResult
 from textual.message import Message
 from textual.widget import Widget
-from textual.widgets import DataTable
+from textual.widgets import DataTable, Label
 
 from probefs.config import load_config
 from probefs.icons.base import IconSet
@@ -25,6 +25,24 @@ from probefs.rendering.columns import build_row
 
 
 class DirectoryList(Widget, can_focus=True):
+
+    DEFAULT_CSS = """
+    DirectoryList #pane-title {
+        height: 1;
+        width: 100%;
+        color: $text-muted;
+        background: $panel-darken-1;
+        padding: 0 1;
+    }
+    DirectoryList.active #pane-title {
+        color: $text;
+        background: $accent 25%;
+        text-style: bold;
+    }
+    DirectoryList DataTable {
+        height: 1fr;
+    }
+    """
 
     class EntryHighlighted(Message):
         """Posted when the cursor moves to a new entry."""
@@ -53,12 +71,18 @@ class DirectoryList(Widget, can_focus=True):
         self._filter_text: str = ""
         self._sort_mode: str = "name_asc"
         self._show_hidden: bool = False
-        self._icon_set: IconSet = load_icon_set(load_config())
+        _cfg = load_config()
+        self._icon_set: IconSet = load_icon_set(_cfg)
+        self._cockpit_ascii: bool = bool(_cfg.get("cockpit_ascii", False))
 
     def compose(self) -> ComposeResult:
+        yield Label("", id="pane-title")
         yield DataTable(cursor_type="row", show_header=False, show_cursor=True)
 
     def on_mount(self) -> None:
+        # Title row stays hidden until a screen calls set_title (so the SFTP
+        # screen, which has its own pane headers, gets no empty bar).
+        self.query_one("#pane-title", Label).display = False
         dt = self.query_one(DataTable)
         dt.add_column("name")           # flexible width (no fixed width = fills remaining space)
         dt.add_column("perm", width=10)
@@ -124,6 +148,27 @@ class DirectoryList(Widget, can_focus=True):
         """Move DataTable cursor up by one row."""
         self.query_one(DataTable).action_cursor_up()
 
+    def set_title(self, text: str, *, active: bool = False) -> None:
+        """Set the pane title row; mark active (accent + ◆ marker) when True."""
+        marker = ("*" if self._cockpit_ascii else "◆") if active else ""
+        label = self.query_one("#pane-title", Label)
+        label.update(f"{text}  {marker}".rstrip())
+        label.display = True
+        self.set_class(active, "active")
+
+    def visible_counts(self) -> tuple[int, int]:
+        """Return (dir_count, file_count) of the currently visible entries."""
+        dirs = sum(1 for e in self._visible_entries if e.get("type") == "directory")
+        return dirs, len(self._visible_entries) - dirs
+
+    def index_of(self, basename: str) -> int | None:
+        """Return the visible-row index of the entry with this basename, else None."""
+        return _index_of_basename(self._visible_entries, basename)
+
+    def highlight_index(self, idx: int) -> None:
+        """Move the DataTable cursor to row idx (scrolls it into view)."""
+        self.query_one(DataTable).move_cursor(row=idx)
+
     def get_highlighted_entry(self) -> dict | None:
         """Return the currently highlighted entry dict, or None if list is empty."""
         dt = self.query_one(DataTable)
@@ -155,6 +200,19 @@ def _basename(entry: dict) -> str:
     """Return the basename of an entry's path."""
     name = entry.get("name", "")
     return name.split("/")[-1] if "/" in name else name
+
+
+def _index_of_basename(entries: list[dict], basename: str) -> int | None:
+    """Return the index of the first entry whose basename matches, else None.
+
+    An empty basename (e.g. the filesystem root '/') matches nothing.
+    """
+    if not basename:
+        return None
+    for idx, entry in enumerate(entries):
+        if _basename(entry) == basename:
+            return idx
+    return None
 
 
 def _is_hidden(entry: dict) -> bool:
