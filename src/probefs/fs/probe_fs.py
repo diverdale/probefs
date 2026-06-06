@@ -378,6 +378,77 @@ class ProbeFS:
         usage = shutil.disk_usage(path)
         return DiskUsage(total=usage.total, used=usage.used, free=usage.free)
 
+    def fs_label(self, path: str) -> str:
+        """Return a short label for the filesystem the path lives on.
+
+        For local paths: the fs type of the containing mount, uppercased, with
+        any 'fuse.' prefix stripped (e.g. 'ext4' -> 'EXT4', 'fuse.sshfs' ->
+        'SSHFS'). Parses /proc/mounts and picks the longest matching mount point.
+
+        Falls back to 'LOCAL' when the type can't be determined — non-Linux
+        platforms (no /proc/mounts), read errors, or a path under no known mount.
+
+        FAL boundary — this reads /proc/mounts directly; callers must not.
+        Cheap, but called from the load worker for consistency.
+        """
+        protocol = getattr(self._fs, "protocol", "file")
+        if isinstance(protocol, (list, tuple)):
+            protocol = protocol[0]
+        if protocol not in ("file", "local", "abstract"):
+            return ""  # remote backends label themselves (e.g. SFTP host)
+        try:
+            target = os.path.realpath(path)
+            with open("/proc/mounts", encoding="utf-8") as f:
+                mounts = _parse_proc_mounts(f.read())
+            fstype = _match_mount(mounts, target)
+            if fstype:
+                return _clean_fstype(fstype)
+        except OSError:
+            pass
+        return "LOCAL"
+
+
+def _unescape_mount(field: str) -> str:
+    """Decode the octal escapes /proc/mounts uses for spaces, tabs, etc."""
+    return (
+        field.replace(r"\040", " ").replace(r"\011", "\t")
+        .replace(r"\012", "\n").replace(r"\134", "\\")
+    )
+
+
+def _parse_proc_mounts(text: str) -> list[tuple[str, str]]:
+    """Parse /proc/mounts text into [(mountpoint, fstype), ...]."""
+    mounts: list[tuple[str, str]] = []
+    for line in text.splitlines():
+        fields = line.split()
+        if len(fields) >= 3:
+            mounts.append((_unescape_mount(fields[1]), fields[2]))
+    return mounts
+
+
+def _match_mount(mounts: list[tuple[str, str]], path: str) -> str | None:
+    """Return the fstype of the longest mount point containing path, else None.
+
+    Matching is path-component aware: '/home' does not match '/home2/x'.
+    """
+    best_type: str | None = None
+    best_len = -1
+    for mountpoint, fstype in mounts:
+        mp = mountpoint.rstrip("/") or "/"
+        prefix = "/" if mp == "/" else mp + "/"
+        if path == mp or path.startswith(prefix):
+            if len(mp) > best_len:
+                best_len = len(mp)
+                best_type = fstype
+    return best_type
+
+
+def _clean_fstype(fstype: str) -> str:
+    """Normalize an fs type for display: strip 'fuse.' prefix, uppercase."""
+    if fstype.startswith("fuse."):
+        fstype = fstype[len("fuse."):]
+    return fstype.upper()
+
 
 def _fmt_size(n: int) -> str:
     """Format a byte count as a compact human-readable string."""

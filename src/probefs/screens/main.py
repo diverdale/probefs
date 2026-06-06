@@ -30,13 +30,15 @@ class DirectoryLoaded(Message):
     """Posted by _load_panes worker when a directory listing is ready."""
 
     def __init__(
-        self, entries: list[dict], pane: str, disk_total: int = 0, disk_free: int = 0
+        self, entries: list[dict], pane: str, disk_total: int = 0,
+        disk_free: int = 0, fs_label: str = "",
     ) -> None:
         self.entries = entries
         self.pane = pane  # "parent" or "current"
-        # Disk figures only populated for pane="current".
+        # Disk figures + fs label only populated for pane="current".
         self.disk_total = disk_total
         self.disk_free = disk_free
+        self.fs_label = fs_label
         super().__init__()
 
 
@@ -91,9 +93,10 @@ class MainScreen(Screen):
         try:
             current_entries = self.core.fs.ls(self.core.cwd, detail=True)
             usage = self.core.fs.disk_usage(self.core.cwd)
+            fs_label = self.core.fs.fs_label(self.core.cwd)
             self.post_message(DirectoryLoaded(
                 current_entries, pane="current",
-                disk_total=usage.total, disk_free=usage.free,
+                disk_total=usage.total, disk_free=usage.free, fs_label=fs_label,
             ))
         except Exception as exc:
             self.post_message(DirectoryLoadFailed(str(exc)))
@@ -118,6 +121,7 @@ class MainScreen(Screen):
             self.query_one("#header-bar", HeaderBar).path = self.core.cwd
             # Update instrument readouts: sort lamp, counts, hidden lamp, disk gauge.
             status = self.query_one("#status-bar", StatusBar)
+            status.set_connection(message.fs_label or "LOCAL")
             status.set_sort(SORT_LABELS[self.core.sort_mode])
             status.set_hidden(self.core.show_hidden)
             status.set_disk(message.disk_total, message.disk_free)
