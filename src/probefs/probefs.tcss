@@ -38,6 +38,18 @@ DirectoryList DataTable {
     background: $panel;
 }
 
+/* The current pane is the active one: its cursor is bright. The parent pane's
+   cursor is subdued — it only marks "the directory you're in" for context, so
+   it shouldn't compete with the active pane's selection. */
+#pane-current DataTable > .datatable--cursor {
+    background: $accent 40%;
+    color: $text;
+}
+#pane-parent DataTable > .datatable--cursor {
+    background: $panel-lighten-1;
+    color: $text-muted;
+}
+
 #status-bar {
     height: 4;  /* 2 content rows + 2 border rows */
     border: round $panel-lighten-1;

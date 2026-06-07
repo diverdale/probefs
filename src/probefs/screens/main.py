@@ -81,6 +81,9 @@ class MainScreen(Screen):
         status = self.query_one("#status-bar", StatusBar)
         status.set_connection("LOCAL")
         status.set_sort(SORT_LABELS[self.core.sort_mode])
+        # Focus the current pane — Textual would otherwise auto-focus the first
+        # composed widget (the parent pane), giving it a competing bright cursor.
+        self.query_one("#pane-current", DirectoryList).focus()
         self._load_panes()
 
     @work(thread=True, exclusive=True, exit_on_error=False)
