@@ -16,7 +16,7 @@ from __future__ import annotations
 from textual.app import ComposeResult
 from textual.message import Message
 from textual.widget import Widget
-from textual.widgets import DataTable, Label
+from textual.widgets import DataTable
 
 from probefs.config import load_config
 from probefs.icons.base import IconSet
@@ -27,18 +27,6 @@ from probefs.rendering.columns import build_row
 class DirectoryList(Widget, can_focus=True):
 
     DEFAULT_CSS = """
-    DirectoryList #pane-title {
-        height: 1;
-        width: 100%;
-        color: $text-muted;
-        background: $panel-darken-1;
-        padding: 0 1;
-    }
-    DirectoryList.active #pane-title {
-        color: $text;
-        background: $accent 25%;
-        text-style: bold;
-    }
     DirectoryList DataTable {
         height: 1fr;
     }
@@ -76,13 +64,9 @@ class DirectoryList(Widget, can_focus=True):
         self._cockpit_ascii: bool = bool(_cfg.get("cockpit_ascii", False))
 
     def compose(self) -> ComposeResult:
-        yield Label("", id="pane-title")
         yield DataTable(cursor_type="row", show_header=False, show_cursor=True)
 
     def on_mount(self) -> None:
-        # Title row stays hidden until a screen calls set_title (so the SFTP
-        # screen, which has its own pane headers, gets no empty bar).
-        self.query_one("#pane-title", Label).display = False
         dt = self.query_one(DataTable)
         dt.add_column("name")           # flexible width (no fixed width = fills remaining space)
         dt.add_column("perm", width=10)
@@ -149,11 +133,9 @@ class DirectoryList(Widget, can_focus=True):
         self.query_one(DataTable).action_cursor_up()
 
     def set_title(self, text: str, *, active: bool = False) -> None:
-        """Set the pane title row; mark active (accent + ◆ marker) when True."""
+        """Set the pane's border title; mark active (accent border + marker)."""
         marker = ("*" if self._cockpit_ascii else "◆") if active else ""
-        label = self.query_one("#pane-title", Label)
-        label.update(f"{text}  {marker}".rstrip())
-        label.display = True
+        self.border_title = f"{text} {marker}".rstrip()
         self.set_class(active, "active")
 
     def visible_counts(self) -> tuple[int, int]:

@@ -210,3 +210,18 @@ async def test_cockpit_chrome_renders_in_app(tmp_path, monkeypatch) -> None:
         assert "DISK" in gauge and "%" in gauge
         assert scr.query_one("#pane-current", DirectoryList).has_class("active")
         assert not scr.query_one("#pane-parent", DirectoryList).has_class("active")
+
+
+@pytest.mark.asyncio
+async def test_current_pane_is_focused_on_mount(tmp_path, monkeypatch) -> None:
+    """Focus must land on the current pane, not the auto-focused parent pane."""
+    (tmp_path / "sub").mkdir()
+    monkeypatch.chdir(tmp_path)
+    from probefs.app import ProbeFSApp
+    app = ProbeFSApp()
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        await app.workers.wait_for_complete()
+        await pilot.pause()
+        assert app.focused is not None
+        assert app.focused.id == "pane-current"
