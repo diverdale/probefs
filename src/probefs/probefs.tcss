@@ -16,19 +16,19 @@
     height: 1fr;
 }
 #pane-parent {
-    width: 1fr;
+    width: 2fr;
     height: 100%;
     border: round $panel-lighten-1;
     border-title-align: left;
 }
 #pane-current {
-    width: 1fr;
+    width: 3fr;
     height: 100%;
     border: round $accent;
     border-title-align: left;
 }
 #pane-preview {
-    width: 2fr;
+    width: 4fr;
     height: 100%;
     border: round $panel-lighten-1;
     border-title-align: left;
