@@ -152,12 +152,11 @@ async def test_visible_counts() -> None:
 
 @pytest.mark.asyncio
 async def test_set_title_active_marker_and_class() -> None:
-    from textual.widgets import Label
     app = _Harness()
     async with app.run_test():
         dl = app.query_one(DirectoryList)
         dl.set_title("probefs", active=True)
-        title = str(app.query_one("#pane-title", Label).render())
+        title = str(dl.border_title)
         assert "probefs" in title
         assert "◆" in title
         assert dl.has_class("active")

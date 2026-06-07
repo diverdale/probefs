@@ -1,7 +1,14 @@
-/* Cockpit frame: one outer border wrapping header + panes + status. */
+/* Superfile-style cockpit: each region is its own rounded box, no outer frame.
+   The active (current) pane's border is accent-colored; titles sit in the
+   top border edge via each widget's border_title. */
+
 #cockpit {
     height: 1fr;
-    border: round $primary;
+}
+
+#header-bar {
+    height: 3;  /* 1 content row + 2 border rows (Textual uses border-box sizing) */
+    border: round $panel-lighten-1;
 }
 
 #panes {
@@ -11,18 +18,27 @@
 #pane-parent {
     width: 1fr;
     height: 100%;
-    border-right: solid $panel-lighten-1;
+    border: round $panel-lighten-1;
+    border-title-align: left;
 }
 #pane-current {
     width: 1fr;
     height: 100%;
-    border-right: solid $panel-lighten-1;
+    border: round $accent;
+    border-title-align: left;
 }
 #pane-preview {
     width: 2fr;
     height: 100%;
+    border: round $panel-lighten-1;
+    border-title-align: left;
 }
 
 DirectoryList DataTable {
     background: $panel;
+}
+
+#status-bar {
+    height: 4;  /* 2 content rows + 2 border rows */
+    border: round $panel-lighten-1;
 }

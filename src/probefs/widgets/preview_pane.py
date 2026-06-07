@@ -34,13 +34,13 @@ _TRUNCATION_NOTICE = "\n\n[dim]--- preview truncated at 512 KB ---[/dim]"
 class PreviewPane(Widget):
     """Right pane: shows syntax-highlighted file preview or directory listing."""
 
+    BORDER_TITLE = "PREVIEW"
+
     DEFAULT_CSS = """
     PreviewPane #preview-header {
         height: 1;
         width: 100%;
         color: $text-muted;
-        background: $panel-darken-1;
-        padding: 0 1;
     }
     PreviewPane ContentSwitcher {
         height: 1fr;
